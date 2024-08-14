@@ -46,9 +46,10 @@ function debugButtons(ctx: CanvasRenderingContext2D, debugInstance: Debug) {
       },
       ctx,
       ...DEFAULT_BUTTON_THEME,
-      text: "Unknown",
+      text: "FPS throttle",
       padding: 10,
       fontSize: "10px",
+      onClick: () => debugInstance.toggleFPSThrottle(),
     }),
     new Button({
       position: {

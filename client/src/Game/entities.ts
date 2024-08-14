@@ -72,23 +72,22 @@ export class Jewel extends InteractableEntity {
   boardBot: number = 0;
   boardRight: number = 0;
   fallingVec: Vector;
-  bounce = 0.7;
+  physStartT: number = 0;
+  dt = 0;
+  bounce = -0.3;
   min_acceleration = 0.1;
   constructor({ size, position, jewelType, board }: JewelProps) {
     super({ size, position, type: "jewel" });
     this.jewelType = jewelType;
     this.board = board;
-    this.fallingVec = new Vector({});
+    this.fallingVec = new Vector({ x: 0, y: 2 });
     this.boardBot = board.position.y + board.size.height;
     this.boardRight = board.position.x + board.size.width;
-
-    // set falling velocity vec
-    this.fallingVec.setLength(0.1);
   }
 
   checkCollision(otherJewel: Jewel) {
     if (
-      this.position.y + this.size.height - 10 >= otherJewel.position.y &&
+      this.position.y + this.size.height >= otherJewel.position.y &&
       this.position.x === otherJewel.position.x
     ) {
       this.bounceOff(otherJewel);
@@ -96,49 +95,34 @@ export class Jewel extends InteractableEntity {
   }
 
   bounceOff(otherJewel: Jewel) {
-    const dx = 0; // we care only y direction
-    const dy = otherJewel.position.y - this.position.y;
-    const distance = this.size.height;
-    const colNormX = dx / distance;
-    const colNormY = dy / distance;
-
-    const relVelx = 0;
-    const relVely = Math.abs(otherJewel.fallingVec.y - this.fallingVec.y);
-    const speed = colNormX * relVelx + colNormY * relVely;
-
-    console.log(speed, colNormY, relVely);
-    this.fallingVec.y -= speed * colNormY;
-    otherJewel.fallingVec.y += speed * colNormY;
+    this.position.y = otherJewel.position.y - this.size.height;
+    this.fallingVec.y *= this.bounce;
+    otherJewel.fallingVec.y *= -0.2;
   }
 
   checkWallCollision() {
     if (this.position.y + this.size.height >= this.boardBot) {
       // bounce up
       this.position.y = this.boardBot - this.size.height;
-      this.fallingVec.setLength(this.fallingVec.getLength() * this.bounce);
-      this.fallingVec.setAngle(-this.fallingVec.getAngle());
+      this.fallingVec.y *= this.bounce;
     }
   }
 
-  setFalling(val = true) {
+  setFalling(t: number, val = true) {
     this.isFalling = val;
+    this.physStartT = t;
   }
 
-  private updateFalling() {
+  private updateFalling(t: number, dt: number) {
     this.fallingVec.y += GRAVITY_VEC.y;
-    this.position.y += this.fallingVec.y;
-    // if (Math.abs(this.fallingVec.y) < this.min_acceleration) {
-    //   this.isFalling = false;
-    // }
+    this.position.y += this.fallingVec.y * dt;
+    if (t - this.physStartT > 5) {
+      this.isFalling = false;
+    }
   }
-  update() {
+  update(t: number, dt: number) {
     if (this.isFalling) {
-      this.updateFalling();
-      // if (this.position.y + this.size.height >= this.boardBot) {
-      //   this.position.y = this.boardBot - this.size.height;
-      //   this.fallingVec.setLength(this.fallingVec.getLength() * this.bounce);
-      //   this.fallingVec.setAngle(-this.fallingVec.getAngle());
-      // }
+      this.updateFalling(t, dt);
     }
   }
 
@@ -163,6 +147,7 @@ export class Board extends BaseEntity {
   cols = 0;
   rows = 0;
   jewels: Jewel[] = [];
+  t = 0;
 
   constructor({ position, size, cols, rows }: BoardProps) {
     super({ position, size, type: "board" });
@@ -184,9 +169,10 @@ export class Board extends BaseEntity {
     }
   }
 
-  update() {
+  update(t: number, dt: number) {
+    this.t = t;
     for (let i = 0; i < this.jewels.length; i++) {
-      this.jewels[i].update();
+      this.jewels[i].update(t, dt);
     }
     this.checkCollision();
   }
@@ -202,7 +188,11 @@ export class Board extends BaseEntity {
       const { row, col } = convertTo2dInd(i, this.rows, this.cols);
       const jewelPos: Coords = {
         x: this.position.x + jewelSize.width * col,
-        y: this.position.y - this.size.height + jewelSize.height * row,
+        y:
+          this.position.y -
+          this.size.height / 1.5 -
+          Math.random() * 10 +
+          jewelSize.height * row,
       };
 
       const jewel = new Jewel({
@@ -212,7 +202,7 @@ export class Board extends BaseEntity {
         board: this,
       });
 
-      jewel.setFalling();
+      jewel.setFalling(this.t);
       this.jewels[i] = jewel;
     }
   }

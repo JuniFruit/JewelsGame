@@ -97,6 +97,8 @@ export class Debug {
   canvasH = 0;
   secondsPassed = 0;
   timePassed = 0;
+  isFPSThrottling = false;
+  FPSThrottle = 0.05; // ~15fps
   private rectFont = "normal 15px Arial";
   private rectFillStyle = "black";
 
@@ -117,11 +119,15 @@ export class Debug {
     const size = BOARD_ROWS * BOARD_COLS;
     const types = Object.values(JEWEL_TYPE);
     const layout: number[] = [];
-    for (let i = 0; i < 9; i++) {
+    for (let i = 0; i < size; i++) {
       layout[i] = types[Math.floor(Math.random() * types.length)];
     }
 
     return layout;
+  }
+
+  toggleFPSThrottle() {
+    this.isFPSThrottling = !this.isFPSThrottling;
   }
 
   setTestBoards() {
@@ -151,7 +157,8 @@ export class Debug {
 
     // Time
     this.ctx.fillText("timePassed: " + this.timePassed, 10, 65);
+    this.ctx.fillText("frameTime: " + this.secondsPassed, 10, 80);
   }
 }
 
-export const GRAVITY_VEC = new Vector({ x: 0, y: 0.1 });
+export const GRAVITY_VEC = new Vector({ x: 0, y: 9.8 });

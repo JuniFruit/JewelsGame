@@ -13,6 +13,7 @@ let debugInstance: Debug | undefined;
 let game: Game;
 let timePassed = 0;
 let ui: UI;
+const dt_bound = 0.01;
 
 export async function init(canvas: HTMLCanvasElement) {
   const context = canvas.getContext("2d");
@@ -41,13 +42,28 @@ export async function init(canvas: HTMLCanvasElement) {
 function gameLoop(timeStamp: number) {
   // time
   secondsPassed = (timeStamp - oldTimeStamp) / 1000;
-  timePassed += Math.min(secondsPassed, 0.1);
-  oldTimeStamp = timeStamp;
-  game.update();
 
+  if (
+    debugInstance &&
+    debugInstance.isFPSThrottling &&
+    secondsPassed <= debugInstance.FPSThrottle
+  ) {
+    return window.requestAnimationFrame(gameLoop);
+  }
+  if (secondsPassed <= dt_bound) return window.requestAnimationFrame(gameLoop);
+  oldTimeStamp = timeStamp;
   if (debugInstance) {
     debugInstance.update(secondsPassed, timePassed);
   }
+
+  while (secondsPassed > 0.0) {
+    const dt = Math.min(secondsPassed, dt_bound);
+    game.update(timePassed, dt);
+
+    secondsPassed -= dt;
+    timePassed += dt;
+  }
+
   draw();
   window.requestAnimationFrame(gameLoop);
 }

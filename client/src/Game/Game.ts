@@ -31,9 +31,9 @@ export class Game {
     }
   }
 
-  update() {
-    this.p1Board.update();
-    this.p2Board.update();
+  update(t: number, dt: number) {
+    this.p1Board.update(t, dt);
+    this.p2Board.update(t, dt);
   }
 
   draw() {

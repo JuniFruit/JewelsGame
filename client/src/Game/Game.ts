@@ -6,6 +6,11 @@ export type GameProps = {
   ctx: CanvasRenderingContext2D;
 };
 
+export type Matches = {
+  horMatches: number[]; // array of indices within the layout array
+  vertMatches: number[];
+};
+
 export class Game {
   mode;
   ctx: CanvasRenderingContext2D;

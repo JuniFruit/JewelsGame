@@ -97,6 +97,7 @@ export class Debug {
   canvasH = 0;
   secondsPassed = 0;
   timePassed = 0;
+  debugLayout: number[] = [];
   isFPSThrottling = false;
   FPSThrottle = 0.05; // ~15fps
   private rectFont = "normal 15px Arial";
@@ -108,6 +109,11 @@ export class Debug {
     const { height, width } = ctx.canvas.getBoundingClientRect();
     this.canvasH = height;
     this.canvasW = width;
+    this.debugLayout = [
+      1, 6, 6, 6, 7, 6, 7, 8, 1, 3, 4, 5, 6, 7, 8, 9, 2, 1, 5, 6, 7, 3, 9, 2, 1,
+      1, 5, 4, 7, 3, 8, 2, 4, 3, 7, 7, 3, 7, 3, 3, 5, 1, 3, 5, 8, 8, 3, 2, 7, 7,
+      2, 3, 3, 1, 4, 5, 1, 4, 6, 2, 4, 5, 8, 7,
+    ];
   }
 
   setMouseCoords(pos: Coords) {
@@ -130,8 +136,10 @@ export class Debug {
     this.isFPSThrottling = !this.isFPSThrottling;
   }
 
-  setTestBoards() {
-    const layout = this.generateRandomTestBoard();
+  setTestBoards(isRandom = true) {
+    const layout = isRandom
+      ? this.generateRandomTestBoard()
+      : [...this.debugLayout];
     this.game.setBoard(layout, "p1");
     this.game.setBoard(layout, "p2");
   }

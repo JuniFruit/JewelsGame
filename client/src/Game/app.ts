@@ -27,6 +27,8 @@ export async function init(canvas: HTMLCanvasElement) {
   game = new Game({ ctx });
   debugInstance = DEBUG ? new Debug(game, context) : undefined;
 
+  ui.addBoard(game.p1Board);
+
   const cleanInputs = initInputs(canvas, game, ui, debugInstance);
   initGameScreens(ui, game, context, debugInstance);
   ui.setCurrentScreen("game");

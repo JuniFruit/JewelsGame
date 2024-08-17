@@ -59,6 +59,20 @@ export const JEWEL_TYPE = {
   SUPER_SHIELD: 14,
 };
 
+export type ConversionType = [number, number];
+export type ConversionMap = {
+  [key: number]: ConversionType[];
+};
+// Sets what jewel types merge into what skill
+export const JEWEL_CONVERSION_MAP: ConversionMap = {
+  [JEWEL_TYPE.BLUE]: [[JEWEL_TYPE.STUN, 4]],
+  [JEWEL_TYPE.RED]: [[JEWEL_TYPE.CRIT_STRIKE, 4]],
+  [JEWEL_TYPE.ORANGE]: [[JEWEL_TYPE.EXPLOSION, 4]],
+  [JEWEL_TYPE.GREEN]: [[JEWEL_TYPE.POISON, 4]],
+  [JEWEL_TYPE.PURPLE]: [[JEWEL_TYPE.SHIELD, 4]],
+  [JEWEL_TYPE.BROWN]: [[JEWEL_TYPE.VAMPIRE, 4]],
+};
+
 // rare jewels that can be obtained only randomly
 export const RARE_JEWELS = {
   POISON: 11,

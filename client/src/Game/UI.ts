@@ -1,6 +1,12 @@
 import { FONT, FontWeight } from "./assets/fonts/fonts";
 import { DEFAULT_FONT_SIZE } from "./config";
-import { BaseEntityProps, Coords, InteractableEntity, Size } from "./entities";
+import {
+  BaseEntityProps,
+  Board,
+  Coords,
+  InteractableEntity,
+  Size,
+} from "./entities";
 import { setTransparency } from "./utils";
 
 export async function initFonts(ui: UI) {
@@ -200,6 +206,7 @@ export class UI {
   fontWeight = "light";
   currentFont = `${this.fontWeight} ${this.fontSize} ${this.fontFamily}`;
   currentHoveredElement: InteractableEntity | undefined;
+  p1Board: Board | undefined;
 
   constructor(ctx: CanvasRenderingContext2D) {
     this.ctx = ctx;
@@ -222,6 +229,10 @@ export class UI {
     this.fontWeight = weight;
   }
 
+  addBoard(p1Board: Board) {
+    this.p1Board = p1Board;
+  }
+
   drawFont() {
     this.ctx.font = this.currentFont;
   }
@@ -231,18 +242,24 @@ export class UI {
   }
 
   mouseDown() {
+    this.p1Board?.mouseDown();
     if (this.currentHoveredElement) {
       this.currentHoveredElement.mouseDown();
     }
   }
 
   mouseUp() {
+    this.p1Board?.mouseUp();
+
     if (this.currentHoveredElement) {
       this.currentHoveredElement.mouseUp();
     }
   }
 
   checkIsMouseIntersecting(mousePos: Coords) {
+    if (this.p1Board) {
+      this.p1Board.checkIsHovered(mousePos);
+    }
     if (
       this.currentHoveredElement &&
       this.currentHoveredElement.checkIsHovered(mousePos)

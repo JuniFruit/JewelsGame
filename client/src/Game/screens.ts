@@ -58,9 +58,10 @@ function debugButtons(ctx: CanvasRenderingContext2D, debugInstance: Debug) {
       },
       ctx,
       ...DEFAULT_BUTTON_THEME,
-      text: "Create anim",
+      text: "Generate set board",
       padding: 10,
       fontSize: "10px",
+      onClick: () => debugInstance.setTestBoards(false),
     }),
   ];
   return elements;

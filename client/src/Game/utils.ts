@@ -47,22 +47,27 @@ export class Vector {
     this.x = x;
     this.y = y;
   }
-
   setAngle(angle: number) {
-    const len = this.getLength();
-    this.x = Math.cos(angle) * len;
-    this.y = Math.sin(angle) * len;
+    const length = this.getLength();
+    this.y = Math.sin(angle) * length;
+    this.x = Math.cos(angle) * length;
   }
-  getAngle() {
-    return Math.atan2(this.x, this.y);
-  }
-  setLength(len: number) {
+
+  setLength(length: number) {
     const angle = this.getAngle();
-    this.x = Math.cos(angle) * len;
-    this.y = Math.sin(angle) * len;
+    this.y = Math.sin(angle) * length;
+    this.x = Math.cos(angle) * length;
+  }
+
+  getAngle() {
+    return Math.atan2(this.y, this.x);
   }
   getLength() {
-    return Math.sqrt(this.x * this.x + this.y * this.y);
+    return Math.sqrt(this.y ** 2 + this.x ** 2);
+  }
+  reset() {
+    this.x = 0;
+    this.y = 0;
   }
 }
 

@@ -115,9 +115,9 @@ export class Debug {
     this.canvasH = height;
     this.canvasW = width;
     this.debugLayout = [
-      1, 6, 6, 6, 7, 6, 7, 8, 1, 3, 4, 5, 6, 7, 8, 9, 2, 1, 5, 6, 7, 3, 9, 2, 1,
-      1, 5, 4, 7, 3, 8, 2, 4, 3, 7, 7, 3, 7, 3, 3, 5, 1, 3, 5, 8, 8, 3, 2, 7, 7,
-      2, 3, 3, 1, 4, 5, 1, 4, 6, 2, 4, 5, 8, 7,
+      1, 6, 6, 6, 5, 6, 5, 4, 1, 3, 4, 5, 6, 5, 4, 10, 2, 1, 5, 6, 5, 3, 9, 2,
+      1, 1, 5, 4, 5, 3, 4, 2, 4, 3, 5, 5, 3, 5, 3, 3, 5, 1, 3, 5, 4, 4, 3, 2, 5,
+      5, 2, 3, 3, 1, 4, 5, 1, 4, 6, 2, 4, 5, 4, 8,
     ];
   }
 
@@ -131,7 +131,7 @@ export class Debug {
     const types = Object.values(JEWEL_TYPE);
     const layout: number[] = [];
     for (let i = 0; i < size; i++) {
-      layout[i] = types[Math.floor(Math.random() * types.length)];
+      layout[i] = types[Math.floor(Math.random() * 6)];
     }
 
     return layout;

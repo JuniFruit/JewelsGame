@@ -27,7 +27,7 @@ export async function init(canvas: HTMLCanvasElement) {
   game = new Game({ ctx });
   debugInstance = DEBUG ? new Debug(game, context) : undefined;
 
-  ui.addBoard(game.p1Board);
+  ui.game = game;
 
   const cleanInputs = initInputs(canvas, game, ui, debugInstance);
   initGameScreens(ui, game, context, debugInstance);
@@ -54,6 +54,7 @@ function gameLoop(timeStamp: number) {
   }
   if (secondsPassed <= dt_bound) return window.requestAnimationFrame(gameLoop);
   oldTimeStamp = timeStamp;
+
   if (debugInstance) {
     debugInstance.update(secondsPassed, timePassed);
   }

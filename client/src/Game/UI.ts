@@ -1,12 +1,13 @@
 import { FONT, FontWeight } from "./assets/fonts/fonts";
 import { DEFAULT_FONT_SIZE } from "./config";
+import { Board } from "./entities";
+import { Game } from "./Game";
 import {
   BaseEntityProps,
-  Board,
   Coords,
   InteractableEntity,
   Size,
-} from "./entities";
+} from "./sharedEntities";
 import { setTransparency } from "./utils";
 
 export async function initFonts(ui: UI) {
@@ -25,6 +26,95 @@ export async function initFonts(ui: UI) {
     }
   });
   await Promise.all(fontPromises);
+}
+
+export type HealthBarProps = Omit<BaseEntityProps, "type"> & {
+  board: Board;
+  player: "p1" | "p2";
+};
+
+export class HealthBar extends InteractableEntity {
+  board: Board;
+  currentHealth: number;
+  fillColor = "";
+  ctx: CanvasRenderingContext2D | undefined;
+  private latestDmg = 0;
+  private applyingFactor = 10;
+  private textPos: Coords = { x: 0, y: 0 };
+  isApplyingDmg = false;
+
+  constructor({ position, size, board, player }: HealthBarProps) {
+    super({ position, size, type: "healthbar" });
+    this.board = board;
+    this.currentHealth = board.health;
+    this.fillColor = player === "p1" ? "blue" : "red";
+  }
+
+  applyDamage(val: number) {
+    this.isApplyingDmg = true;
+    this.latestDmg = val;
+    this.calculateTextPos(`-${this.latestDmg}`);
+  }
+
+  private calculateText(text: string) {
+    // this.ctx.font = this.currentFont;
+    const textMeasure = this.ctx?.measureText(text);
+    return textMeasure;
+  }
+
+  private calculateTextPos(text: string) {
+    const textMeasure = this.calculateText(text);
+    if (!textMeasure) return;
+    // centered
+    this.textPos.x =
+      this.position.x +
+      (this.initialSize.width * 0.5 - textMeasure.width * 0.5);
+    this.textPos.y =
+      this.position.y +
+      this.initialSize.height * 0.5 +
+      textMeasure.hangingBaseline * 0.5;
+  }
+
+  private updateApplyDmg(_t: number, dt: number) {
+    this.currentHealth -= this.latestDmg * this.applyingFactor * dt;
+    this.size.width = this.initialSize.width * (this.currentHealth * 0.01);
+    if (this.currentHealth <= this.board.health) {
+      this.isApplyingDmg = false;
+      this.currentHealth = this.board.health;
+    }
+  }
+
+  update(t: number, dt: number) {
+    if (this.isApplyingDmg) {
+      this.updateApplyDmg(t, dt);
+    }
+  }
+
+  draw(ctx: CanvasRenderingContext2D) {
+    if (!this.ctx) {
+      this.ctx = ctx;
+    }
+    ctx.lineWidth = 2;
+    ctx.fillStyle = this.fillColor;
+    ctx.strokeStyle = "black";
+    ctx.strokeRect(
+      this.position.x,
+      this.position.y,
+      this.initialSize.width,
+      this.initialSize.height,
+    );
+
+    ctx.fillRect(
+      this.position.x,
+      this.position.y,
+      this.size.width,
+      this.size.height,
+    );
+    if (this.isApplyingDmg) {
+      this.ctx.fillStyle = "black";
+      this.ctx.fillText(`-${this.latestDmg}`, this.textPos.x, this.textPos.y);
+    }
+  }
 }
 
 export type ButtonProps = Omit<BaseEntityProps, "type" | "size"> & {
@@ -206,7 +296,7 @@ export class UI {
   fontWeight = "light";
   currentFont = `${this.fontWeight} ${this.fontSize} ${this.fontFamily}`;
   currentHoveredElement: InteractableEntity | undefined;
-  p1Board: Board | undefined;
+  game: Game | undefined;
 
   constructor(ctx: CanvasRenderingContext2D) {
     this.ctx = ctx;
@@ -229,10 +319,6 @@ export class UI {
     this.fontWeight = weight;
   }
 
-  addBoard(p1Board: Board) {
-    this.p1Board = p1Board;
-  }
-
   drawFont() {
     this.ctx.font = this.currentFont;
   }
@@ -242,14 +328,14 @@ export class UI {
   }
 
   mouseDown() {
-    this.p1Board?.mouseDown();
+    this.game?.p1Board?.mouseDown();
     if (this.currentHoveredElement) {
       this.currentHoveredElement.mouseDown();
     }
   }
 
   mouseUp() {
-    this.p1Board?.mouseUp();
+    this.game?.p1Board?.mouseUp();
 
     if (this.currentHoveredElement) {
       this.currentHoveredElement.mouseUp();
@@ -257,8 +343,8 @@ export class UI {
   }
 
   checkIsMouseIntersecting(mousePos: Coords) {
-    if (this.p1Board) {
-      this.p1Board.checkIsHovered(mousePos);
+    if (this.game?.p1Board) {
+      this.game?.p1Board.checkIsHovered(mousePos);
     }
     if (
       this.currentHoveredElement &&

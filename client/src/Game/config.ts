@@ -25,6 +25,8 @@ export const P1_BOARD: BoardProps = {
     x: 10,
     y: 30,
   },
+  player: "p1",
+  health: 100,
   size: BOARD_SIZE,
   cols: BOARD_COLS,
   rows: BOARD_ROWS,
@@ -36,9 +38,34 @@ export const P2_BOARD: BoardProps = {
     x: P1_BOARD.position.x + BOARD_SIZE.width * 2,
     y: P1_BOARD.position.y,
   },
+  player: "p2",
+  health: 100,
+
   size: BOARD_SIZE,
   cols: BOARD_COLS,
   rows: BOARD_ROWS,
+};
+
+export type JewelSpellConversion = {
+  matchesToGet: number;
+  parentType: number;
+};
+export const JEWEL_SPELL_TYPE = {
+  VAMPIRE: 7,
+  CRIT_STRIKE: 8,
+  STUN: 9,
+  SHIELD: 10,
+  POISON: 11,
+  EXPLOSION: 12,
+};
+
+export const JEWEL_SPELL_CONVERSION: Record<string, JewelSpellConversion> = {
+  [JEWEL_SPELL_TYPE.VAMPIRE]: { matchesToGet: 4, parentType: 1 },
+  [JEWEL_SPELL_TYPE.CRIT_STRIKE]: { matchesToGet: 4, parentType: 2 },
+  [JEWEL_SPELL_TYPE.STUN]: { matchesToGet: 4, parentType: 3 },
+  [JEWEL_SPELL_TYPE.SHIELD]: { matchesToGet: 4, parentType: 4 },
+  [JEWEL_SPELL_TYPE.POISON]: { matchesToGet: 4, parentType: 5 },
+  [JEWEL_SPELL_TYPE.EXPLOSION]: { matchesToGet: 4, parentType: 6 },
 };
 
 // types of jewels existing in the game
@@ -49,36 +76,7 @@ export const JEWEL_TYPE = {
   GREEN: 4,
   PURPLE: 5,
   BROWN: 6,
-  VAMPIRE: 7,
-  CRIT_STRIKE: 8,
-  STUN: 9,
-  SHIELD: 10,
-  POISON: 11,
-  EXPLOSION: 12,
-  SUPER_CRIT_STRIKE: 13,
-  SUPER_SHIELD: 14,
-};
-
-export type ConversionType = [number, number];
-export type ConversionMap = {
-  [key: number]: ConversionType[];
-};
-// Sets what jewel types merge into what skill
-export const JEWEL_CONVERSION_MAP: ConversionMap = {
-  [JEWEL_TYPE.BLUE]: [[JEWEL_TYPE.STUN, 4]],
-  [JEWEL_TYPE.RED]: [[JEWEL_TYPE.CRIT_STRIKE, 4]],
-  [JEWEL_TYPE.ORANGE]: [[JEWEL_TYPE.EXPLOSION, 4]],
-  [JEWEL_TYPE.GREEN]: [[JEWEL_TYPE.POISON, 4]],
-  [JEWEL_TYPE.PURPLE]: [[JEWEL_TYPE.SHIELD, 4]],
-  [JEWEL_TYPE.BROWN]: [[JEWEL_TYPE.VAMPIRE, 4]],
-};
-
-// rare jewels that can be obtained only randomly
-export const RARE_JEWELS = {
-  POISON: 11,
-  EXPLOSION: 12,
-  SUPER_CRIT_STRIKE: 13,
-  SUPER_SHIELD: 14,
+  ...JEWEL_SPELL_TYPE,
 };
 
 // most likely will be deleted, only for debug
@@ -89,14 +87,12 @@ export const JEWEL_TYPE_TO_COLOR: Record<number, string> = {
   4: "green",
   5: "purple",
   6: "brown",
-  7: "#cdeb00",
-  8: "#b30000",
-  9: "#0000cc",
-  10: "#fff9d8",
-  11: "#d0ff2f",
-  12: "#ffbf00",
-  13: "#760000",
-  14: "#daa520",
+  7: "#0000b3",
+  8: "#670000",
+  9: "#674200",
+  10: "#006700",
+  11: "#670067",
+  12: "#ce661c",
 };
 
 export const DEFAULT_FONT_SIZE = "20px";

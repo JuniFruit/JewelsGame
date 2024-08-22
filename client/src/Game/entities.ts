@@ -1,78 +1,28 @@
 import {
-  JEWEL_CONVERSION_MAP,
+  JEWEL_SPELL_CONVERSION,
+  JEWEL_TYPE,
   JEWEL_TYPE_TO_COLOR,
-  MOUSE_SIZE,
 } from "./config";
 import { Matches } from "./Game";
-import { convertTo2dInd, detectCollision, GRAVITY_VEC, Vector } from "./utils";
-
-export type Coords = {
-  x: number;
-  y: number;
-};
-export type Size = {
-  width: number;
-  height: number;
-};
-
-export type BaseEntityProps = {
-  type: string;
-  position: Coords;
-  size: Size;
-};
-
-export class BaseEntity {
-  type: string;
-  position: Coords;
-  size: Size;
-  initialPos: Coords;
-  initialSize: Size;
-
-  constructor({ type, position, size }: BaseEntityProps) {
-    this.type = type;
-    this.size = size;
-    this.position = position;
-    this.initialPos = { ...position };
-    this.initialSize = { ...size };
-  }
-}
-
-export class InteractableEntity extends BaseEntity {
-  isHovered = false;
-  isClicking = false;
-
-  constructor({ type, position, size }: BaseEntityProps) {
-    super({ type, position, size });
-  }
-
-  checkIsHovered(mousePos: Coords) {
-    const isColliding = detectCollision(
-      mousePos,
-      MOUSE_SIZE,
-      this.position,
-      this.size,
-    );
-    this.isHovered = isColliding;
-    return isColliding;
-  }
-
-  mouseDown() {
-    this.isClicking = true;
-  }
-  mouseUp() {
-    this.isClicking = false;
-  }
-}
+import {
+  BaseEntity,
+  BaseEntityProps,
+  Coords,
+  InteractableEntity,
+  Size,
+} from "./sharedEntities";
+import { HealthBar } from "./UI";
+import { convertTo2dInd, GRAVITY_VEC, Vector } from "./utils";
 
 export type JewelProps = Omit<BaseEntityProps, "type"> & {
   jewelType: number;
-  board: Board;
+  boardPos: Coords;
+  boardSize: Size;
 };
 
 export class Jewel extends InteractableEntity {
   jewelType: number;
   targetJewelType: number = 0; // temp var for conversion animation
-  board: Board;
   boardBot: number = 0;
   boardRight: number = 0;
   physStartT: number = 0;
@@ -80,7 +30,7 @@ export class Jewel extends InteractableEntity {
   convertAnimTime: number = 0;
   removeAnimTime: number = 0;
   fallingAnimTime: number = 0;
-  opacity: number = 1; // for debbugging, most likely to be removed
+  opacity: number = 1; // for debbuggin, most likely to be removed
   // vecs
   fallingVec: Vector;
   targetPosition: Coords;
@@ -88,31 +38,41 @@ export class Jewel extends InteractableEntity {
   movingVec: Vector = new Vector({ x: 0, y: 0 });
   // constants
   movingVelFactor = 8;
-  fallingTimeSim = 3; // in seconds
+  fallingTimeSim = 1; // in seconds
   bounce = -0.2;
   // states
+  isSpell = false;
   isMoving = false;
   isFalling = false;
   isPhysicalized = false;
   isSelected = false;
   isConverting = false;
   isRemoving = false;
-  constructor({ size, position, jewelType, board }: JewelProps) {
+  isReadyToRecreate = false;
+  isDisabled = false;
+  isMerging = false;
+  constructor({ size, position, jewelType, boardPos, boardSize }: JewelProps) {
     super({ size, position, type: "jewel" });
     this.jewelType = jewelType;
-    this.board = board;
     this.fallingVec = new Vector({ x: 0, y: 2 });
-    this.boardBot = board.position.y + board.size.height;
-    this.boardRight = board.position.x + board.size.width;
+    this.boardBot = boardPos.y + boardSize.height;
+    this.boardRight = boardPos.x + boardSize.width;
     this.targetPosition = position;
   }
 
+  disable() {
+    this.reset();
+    this.jewelType = 0;
+    this.isDisabled = true;
+  }
+
   private reset() {
+    super.resetMouseStates();
+    this.isMerging = false;
+    this.isReadyToRecreate = false;
     this.isPhysicalized = false;
     this.isMoving = false;
-    this.isHovered = false;
     this.isSelected = false;
-    this.isClicking = false;
     this.isFalling = false;
     this.isConverting = false;
     this.isRemoving = false;
@@ -132,8 +92,14 @@ export class Jewel extends InteractableEntity {
     this.isSelected = val;
   }
 
-  moveTo(pos: Coords) {
-    this.reset();
+  moveTo(pos: Coords, isMerging = false) {
+    // this.reset();
+    super.resetMouseStates();
+    this.isSelected = false;
+    this.isMerging = isMerging;
+    if (isMerging) {
+      this.jewelType = 0;
+    }
     this.isMoving = true;
     this.targetPosition = pos;
     this.newPosDir.x = pos.x - this.position.x < 0 ? -1 : 1;
@@ -163,16 +129,24 @@ export class Jewel extends InteractableEntity {
     }
   }
 
-  setFalling(targetPos: Coords) {
-    this.reset();
+  setFalling(targetPos: Coords, isPhysicalized = false) {
     this.isFalling = true;
     this.targetPosition = targetPos;
     this.fallingAnimTime = this.fallingTimeSim;
-    this.isPhysicalized = true;
+    this.isPhysicalized = isPhysicalized;
+    if (!isPhysicalized) {
+      this.moveTo(targetPos);
+    }
   }
 
   checkIsHovered(mousePos: Coords): boolean {
-    if (this.isPhysicalized || this.isMoving) {
+    if (
+      this.isDisabled ||
+      this.isMerging ||
+      this.isMoving ||
+      this.isPhysicalized ||
+      this.isMoving
+    ) {
       return false;
     }
     return super.checkIsHovered(mousePos);
@@ -180,20 +154,33 @@ export class Jewel extends InteractableEntity {
 
   convertTo(targetType: number) {
     this.reset();
+    this.isSpell = true;
     this.isConverting = true;
-    this.convertAnimTime = 1;
+    this.convertAnimTime = 0.5;
     this.targetJewelType = targetType;
   }
 
   remove() {
     this.isRemoving = true;
-    this.removeAnimTime = 2;
+    this.removeAnimTime = 0.2;
   }
 
   private stopMoving() {
     this.isMoving = false;
     this.position = this.targetPosition;
     this.movingVec.reset();
+    if (!this.isPhysicalized && this.isFalling) {
+      this.stopFalling();
+    }
+    if (this.isMerging) {
+      this.isMerging = false;
+      this.disable();
+    }
+  }
+
+  private stopRemoving() {
+    this.isRemoving = false;
+    this.disable();
   }
 
   private stopFalling() {
@@ -218,10 +205,7 @@ export class Jewel extends InteractableEntity {
   }
 
   private updateConverting(_t: number, dt: number) {
-    this.convertAnimTime - dt;
-    if (this.convertAnimTime > 0) {
-      this.jewelType = this.jewelType === 1 ? 2 : 1;
-    }
+    this.convertAnimTime -= dt;
     if (this.convertAnimTime <= 0) {
       this.stopConverting();
     }
@@ -230,7 +214,7 @@ export class Jewel extends InteractableEntity {
   private updateRemoving(_t: number, dt: number) {
     this.removeAnimTime -= dt;
     if (this.removeAnimTime <= 0) {
-      this.isRemoving = false;
+      this.stopRemoving();
     }
   }
 
@@ -248,6 +232,7 @@ export class Jewel extends InteractableEntity {
     }
   }
   update(t: number, dt: number) {
+    if (this.isDisabled) return;
     if (this.isRemoving) {
       this.updateRemoving(t, dt);
     }
@@ -257,14 +242,16 @@ export class Jewel extends InteractableEntity {
     if (this.isMoving) {
       this.updateMoving(t, dt);
     }
-    if (this.isFalling) {
+    if (this.isFalling && this.isPhysicalized) {
       this.updateFalling(t, dt);
     }
   }
 
   draw(ctx: CanvasRenderingContext2D) {
+    if (this.isDisabled) return;
     if (this.isHovered && !this.isSelected) {
       ctx.lineWidth = 10;
+      ctx.strokeStyle = "white";
       ctx.strokeRect(
         this.position.x,
         this.position.y,
@@ -283,47 +270,105 @@ export class Jewel extends InteractableEntity {
     }
     ctx.fillStyle = JEWEL_TYPE_TO_COLOR[this.jewelType];
     if (this.isRemoving) {
-      ctx.fillStyle = "black";
+      ctx.lineWidth = 10;
+
+      ctx.strokeStyle = "cyan";
+      ctx.strokeRect(
+        this.position.x,
+        this.position.y,
+        this.size.width,
+        this.size.height,
+      );
     }
     ctx.fillRect(
       this.position.x,
       this.position.y,
       this.size.width,
       this.size.height,
-    ); // Add a rectangle to the current path
+    );
   }
 }
 
 export type BoardProps = Omit<BaseEntityProps, "type"> & {
   cols: number;
   rows: number;
+  health: number;
+  player: "p1" | "p2";
 };
 
 export class Board extends BaseEntity {
-  layout: number[] = [];
   cols = 0;
   rows = 0;
   jewels: Jewel[] = [];
   t = 0;
-  hoveredInd = -1;
-  selectedInd = -1;
   jewelSize: Size;
-  currentSwappingJewel1: Jewel | undefined;
-  currentSwappingJewel2: Jewel | undefined;
-  boardState = "";
+  health: number = 0;
+  player: "p1" | "p2" = "p1";
+  private healthBar: HealthBar;
+  private hoveredInd = -1;
+  private selectedInd = -1;
+  private initialSelected1 = -1;
+  private initialSelected2 = -1;
+  private currentSwappingJewel1: Jewel | undefined;
+  private currentSwappingJewel2: Jewel | undefined;
+  private latestMatches: Matches[] = [];
+  private indicesToRemove: number[] = [];
+  private indicesToFall: number[] = [];
+  private spellsToCast: unknown[] = []; // queue for spells to cast
+  private opponentBoard: Board | undefined;
+  // states
+  shouldRevert = false;
+  isSwapping = false;
+  isFalling = false;
+  isRemovingJewels = false;
+  isCastingSpell = false;
 
-  constructor({ position, size, cols, rows }: BoardProps) {
+  constructor({
+    position,
+    size,
+    cols,
+    rows,
+    player,
+    health = 100,
+  }: BoardProps) {
     super({ position, size, type: "board" });
     this.cols = cols;
     this.rows = rows;
+    this.health = health;
+    this.player = player;
     this.jewelSize = {
       width: this.size.width / this.cols,
       height: this.size.height / this.rows,
     };
+    this.healthBar = this.initHealthBar();
   }
 
-  setLayout(layout: number[]) {
-    this.layout = layout;
+  setOpponentBoard(board: Board) {
+    this.opponentBoard = board;
+  }
+
+  applyDamage(val: number) {
+    this.health -= val;
+    this.healthBar.applyDamage(val);
+  }
+
+  private initHealthBar() {
+    const margin = 30;
+    const height = 40;
+    const position: Coords = {
+      x: this.position.x,
+      y: this.position.y + this.size.height + margin,
+    };
+    const size: Size = {
+      width: this.size.width,
+      height,
+    };
+    return new HealthBar({
+      position,
+      size,
+      board: this,
+      player: this.player,
+    });
   }
 
   mouseDown() {
@@ -332,20 +377,34 @@ export class Board extends BaseEntity {
     }
   }
 
+  private compareTypes(type1: number, type2: number) {
+    if (type1 === 0 || type2 === 0) {
+      return false;
+    }
+    if (type1 < 7 && type2 < 7) {
+      return type1 === type2;
+    }
+    const converted1 = JEWEL_SPELL_CONVERSION[type1]?.parentType || type1;
+    const converted2 = JEWEL_SPELL_CONVERSION[type2]?.parentType || type2;
+    return converted1 === converted2;
+  }
+
   /**
    * Move into all 4 directions simultaneously, get all matches by the plane
-   * newInd is the index we want our type to be after swap, initialInd where we make swap from
+   * startInd - index from where we start checking process
    *
    */
-  getMatchesFromPos(type: number, newInd: number, initialInd: number): Matches {
+  getMatchesFromPos(type: number, startInd: number): Matches {
     // init all 4 runners, make them next step on start
-    let vertUp: number | null = newInd - this.cols;
-    let vertDown: number | null = newInd + this.cols;
-    let horLeft: number | null = newInd - 1;
-    let horRight: number | null = newInd + 1;
-    const { row: startRow } = convertTo2dInd(newInd, this.rows, this.cols);
+    let vertUp: number | null = startInd - this.cols;
+    let vertDown: number | null = startInd + this.cols;
+    let horLeft: number | null = startInd - 1;
+    let horRight: number | null = startInd + 1;
+    const { row: startRow } = convertTo2dInd(startInd, this.rows, this.cols);
     const horMatches: number[] = [];
     const vertMatches: number[] = [];
+    horMatches.unshift(startInd);
+    vertMatches.unshift(startInd);
 
     while (
       vertUp !== null ||
@@ -353,13 +412,9 @@ export class Board extends BaseEntity {
       horLeft !== null ||
       horRight !== null
     ) {
-      if (
-        vertUp !== initialInd &&
-        vertUp !== null &&
-        vertUp > -1 &&
-        vertUp < this.layout.length
-      ) {
-        if (this.layout[vertUp] === type) {
+      if (vertUp !== null && vertUp > -1 && vertUp < this.jewels.length) {
+        const jewel = this.jewels[vertUp];
+        if (this.compareTypes(jewel.jewelType, type)) {
           vertMatches.push(vertUp);
           vertUp = vertUp - this.cols;
         } else {
@@ -368,13 +423,9 @@ export class Board extends BaseEntity {
       } else {
         vertUp = null;
       }
-      if (
-        vertDown !== initialInd &&
-        vertDown !== null &&
-        vertDown > -1 &&
-        vertDown < this.layout.length
-      ) {
-        if (this.layout[vertDown] === type) {
+      if (vertDown !== null && vertDown > -1 && vertDown < this.jewels.length) {
+        const jewel = this.jewels[vertDown];
+        if (this.compareTypes(jewel.jewelType, type)) {
           vertMatches.unshift(vertDown);
           vertDown = vertDown + this.cols;
         } else {
@@ -384,15 +435,10 @@ export class Board extends BaseEntity {
         vertDown = null;
       }
 
-      if (
-        horLeft !== initialInd &&
-        horLeft !== null &&
-        horLeft > -1 &&
-        horLeft < this.layout.length
-      ) {
+      if (horLeft !== null && horLeft > -1 && horLeft < this.jewels.length) {
         const { row } = convertTo2dInd(horLeft, this.rows, this.cols);
-
-        if (this.layout[horLeft] === type && row === startRow) {
+        const jewel = this.jewels[horLeft];
+        if (this.compareTypes(jewel.jewelType, type) && row === startRow) {
           horMatches.unshift(horLeft);
           horLeft = horLeft - 1;
         } else {
@@ -401,15 +447,10 @@ export class Board extends BaseEntity {
       } else {
         horLeft = null;
       }
-      if (
-        horRight !== initialInd &&
-        horRight !== null &&
-        horRight > -1 &&
-        horRight < this.layout.length
-      ) {
+      if (horRight !== null && horRight > -1 && horRight < this.jewels.length) {
         const { row } = convertTo2dInd(horRight, this.rows, this.cols);
-
-        if (this.layout[horRight] === type && row === startRow) {
+        const jewel = this.jewels[horRight];
+        if (this.compareTypes(jewel.jewelType, type) && row === startRow) {
           horMatches.push(horRight);
           horRight = horRight + 1;
         } else {
@@ -419,9 +460,6 @@ export class Board extends BaseEntity {
         horRight = null;
       }
     }
-    horMatches.unshift(newInd);
-    vertMatches.unshift(newInd);
-    console.log(horMatches, vertMatches);
 
     return {
       horMatches,
@@ -429,22 +467,24 @@ export class Board extends BaseEntity {
     };
   }
 
+  private resetSwappingIndices() {
+    this.selectedInd = -1;
+    this.initialSelected1 = -1;
+    this.initialSelected2 = -1;
+    this.hoveredInd = -1;
+  }
+
   swapJewels(ind1: number, ind2: number) {
-    [this.layout[ind1], this.layout[ind2]] = [
-      this.layout[ind2],
-      this.layout[ind1],
-    ];
+    if (this.jewels[ind1].isRemoving || this.jewels[ind2].isRemoving) return;
+    this.currentSwappingJewel1 = this.jewels[ind1];
+    this.currentSwappingJewel2 = this.jewels[ind2];
+    this.isSwapping = true;
     [this.jewels[ind1], this.jewels[ind2]] = [
       this.jewels[ind2],
       this.jewels[ind1],
     ];
     this.jewels[ind1].moveTo({ ...this.jewels[ind2].position });
     this.jewels[ind2].moveTo({ ...this.jewels[ind1].position });
-    this.currentSwappingJewel1 = this.jewels[ind1];
-    this.currentSwappingJewel2 = this.jewels[ind2];
-    this.boardState = "swapping";
-    this.selectedInd = -1;
-    this.hoveredInd = -1;
   }
 
   removeOrMerge(matches: Matches) {
@@ -454,15 +494,19 @@ export class Board extends BaseEntity {
     }
     if (vertMatches.length === 3) {
       this.removeLine(vertMatches);
+      this.opponentBoard?.applyDamage(1);
     }
     if (horMatches.length === 3) {
       this.removeLine(horMatches);
+      this.opponentBoard?.applyDamage(1);
     }
     if (vertMatches.length > 3) {
       this.mergeLine(vertMatches);
+      this.opponentBoard?.applyDamage(3);
     }
     if (horMatches.length > 3) {
       this.mergeLine(horMatches);
+      this.opponentBoard?.applyDamage(3);
     }
   }
 
@@ -472,55 +516,45 @@ export class Board extends BaseEntity {
 
     for (let i = 0; i < indices.length; i++) {
       const currInd = indices[i];
-      this.layout[currInd] = 0;
       this.jewels[currInd].remove();
+      this.indicesToRemove.push(currInd);
     }
   }
 
   private findConversion(type: number, matches: number) {
-    const conversionCandidates = JEWEL_CONVERSION_MAP[type] || 0;
+    const found = Object.keys(JEWEL_SPELL_CONVERSION).find((key) => {
+      const item = JEWEL_SPELL_CONVERSION[key];
+      return item.parentType === type && item.matchesToGet <= matches;
+    });
 
-    for (let i = conversionCandidates.length - 1; i > -1; i--) {
-      const [newType, requiredMatches] = conversionCandidates[i];
-      if (requiredMatches <= matches) {
-        return newType;
-      }
-    }
-    return 0;
+    return found ? +found : 0;
   }
 
   mergeLine(indices: number[]) {
     indices.sort((a, b) => a - b);
 
     const mergeInd = Math.floor(indices.length >> 1);
-    const type = this.layout[indices[0]];
+    const type = this.jewels[indices[0]].jewelType;
     const matches = indices.length;
     const mergeTo = this.findConversion(type, matches);
-    console.log("merge", {
-      mergeInd,
-      type,
-      mergeTo,
-      indices,
-      ind: indices[mergeInd],
-    });
-    console.log({ l: [...this.layout] });
-    console.log({ ...this.jewels[indices[mergeInd]].position });
 
     for (let i = 0; i < indices.length; i++) {
       const currInd = indices[i];
       if (i === mergeInd) {
-        this.layout[currInd] = mergeTo;
         this.jewels[currInd].convertTo(mergeTo);
       } else {
-        this.layout[currInd] = 0;
         this.jewels[currInd].moveTo(
           this.jewels[indices[mergeInd]].targetPosition,
+          true,
         );
+        this.indicesToRemove.push(currInd);
       }
     }
   }
 
   attemptSwap(ind1: number, ind2: number) {
+    if (this.isRemovingJewels || this.isFalling || this.isSwapping)
+      return false;
     if (ind1 === ind2) return false;
     const { col: ind1Col, row: ind1Row } = convertTo2dInd(
       ind1,
@@ -537,9 +571,12 @@ export class Board extends BaseEntity {
     const colDelta = Math.abs(ind1Col - ind2Col);
     if (ind1Col === ind2Col && rowDelta > 1) return false;
     if (ind1Row === ind2Row && colDelta > 1) return false;
-    const matches1 = this.getMatchesFromPos(this.layout[ind1], ind2, ind1);
+    this.initialSelected1 = ind1;
+    this.initialSelected2 = ind2;
+    this.swapJewels(ind1, ind2);
+    const matches1 = this.getMatchesFromPos(this.jewels[ind1].jewelType, ind1);
     const { horMatches: horMatches1, vertMatches: vertMatches1 } = matches1;
-    const matches2 = this.getMatchesFromPos(this.layout[ind2], ind1, ind2);
+    const matches2 = this.getMatchesFromPos(this.jewels[ind2].jewelType, ind2);
     const { horMatches: horMatches2, vertMatches: vertMatches2 } = matches2;
     if (
       horMatches1.length < 3 &&
@@ -547,58 +584,89 @@ export class Board extends BaseEntity {
       horMatches2.length < 3 &&
       vertMatches2.length < 3
     ) {
+      this.shouldRevert = true;
       return false;
     }
-    this.swapJewels(ind1, ind2);
-    // this.removeOrMerge(matches1);
-    // this.removeOrMerge(matches2);
 
     return true;
   }
 
-  recalculateLayout() {
-    this.moveJewelsDown();
-    // this.getAllMatches();
-    // this.removeOrMerge();
+  private removeOrMergeMatches() {
+    // if (this.latestMatches.length) {
+    //   this.isRemovingJewels = true;
+    //
+    //   for (let i = 0; i < this.latestMatches.length; i++) {
+    //     this.removeOrMerge(this.latestMatches[i]);
+    //   }
+    // } else {
+    // }
+    for (let i = this.jewels.length - 1; i >= 0; i--) {
+      const jewel = this.jewels[i];
+      const matches = this.getMatchesFromPos(jewel.jewelType, i);
+      if (matches.horMatches.length >= 3 || matches.vertMatches.length >= 3) {
+        this.isRemovingJewels = true;
+      }
+      this.removeOrMerge(matches);
+    }
+
+    this.latestMatches = [];
   }
 
-  private moveJewelsDown() {
-    // find deepest empty spot
-    let startInd = -1;
-    for (let i = this.layout.length - 1; i >= 0; i--) {
-      if (this.layout[i] === 0) {
-        startInd = i;
-        break;
-      }
-    }
+  private moveLineDown(startInd: number) {
     //start swapping element from bottom up in order
-    for (let i = startInd; i >= 0; i -= this.cols) {
-      for (let j = i - this.cols; j >= 0; j -= this.cols) {}
-    }
+
     let elementInd = startInd - this.cols;
     while (startInd >= 0 && elementInd >= 0) {
-      const el1 = this.layout[startInd];
-      const el2 = this.layout[elementInd];
+      const el1 = this.jewels[startInd];
+      const el2 = this.jewels[elementInd];
 
-      if (el1 === 0 && el2 !== 0) {
+      if (el1.jewelType === 0 && el2.jewelType !== 0) {
         // swap elements
-        [this.layout[startInd], this.layout[elementInd]] = [
-          this.layout[elementInd],
-          this.layout[startInd],
-        ];
         const { row, col } = convertTo2dInd(startInd, this.rows, this.cols);
         const x = this.position.x + this.jewelSize.width * col;
         const y = this.position.y + this.jewelSize.height * row;
         const targetPos: Coords = { x, y };
         this.jewels[elementInd].setFalling(targetPos);
+        this.indicesToFall.push(startInd);
+        [this.jewels[startInd], this.jewels[elementInd]] = [
+          this.jewels[elementInd],
+          this.jewels[startInd],
+        ];
+
         // advance both indices one row higher
         startInd = startInd - this.cols;
         elementInd = elementInd - this.cols;
       } else {
-        //advance only second index
+        // advance only second index
         elementInd = elementInd - this.cols;
       }
     }
+  }
+
+  private addJewels() {
+    const layout = [];
+    const types = Object.values(JEWEL_TYPE);
+
+    for (let i = 0; i < this.jewels.length; i++) {
+      if (this.jewels[i].isDisabled) {
+        layout[i] = types[Math.floor(Math.random() * 6)];
+      } else {
+        layout[i] = -1;
+      }
+    }
+    this.generateJewels(layout);
+  }
+
+  private moveJewelsDown() {
+    // find deepest empty spot
+    for (let i = this.jewels.length - 1; i >= 0; i--) {
+      if (this.jewels[i].jewelType === 0) {
+        this.moveLineDown(i);
+      }
+    }
+    this.addJewels();
+
+    this.isFalling = true;
   }
 
   private selectCurrent(ind: number) {
@@ -607,6 +675,7 @@ export class Board extends BaseEntity {
   }
 
   mouseUp() {
+    if (this.isSwapping) return;
     if (this.hoveredInd < 0 && this.selectedInd > -1) {
       // that means we clicked outside
       this.jewels[this.selectedInd].setSelected(false);
@@ -615,7 +684,6 @@ export class Board extends BaseEntity {
     }
     if (this.selectedInd > -1 && this.hoveredInd > -1) {
       const isSuccess = this.attemptSwap(this.selectedInd, this.hoveredInd);
-      console.log(this.selectedInd, this.hoveredInd, isSuccess);
       if (!isSuccess) {
         this.jewels[this.selectedInd].setSelected(false);
         this.selectCurrent(this.hoveredInd);
@@ -655,60 +723,118 @@ export class Board extends BaseEntity {
     }
   }
 
-  private updateSwapping(t: number, dt: number) {
-    this.currentSwappingJewel1?.update(t, dt);
-    this.currentSwappingJewel2?.update(t, dt);
+  private revertSwap(ind1: number, ind2: number) {
+    this.swapJewels(ind1, ind2);
+    this.shouldRevert = false;
+    this.isSwapping = true;
+  }
+
+  private updateSwapping() {
     if (
-      !this.currentSwappingJewel1?.isMoving &&
-      !this.currentSwappingJewel2?.isMoving
+      this.currentSwappingJewel1 &&
+      !this.currentSwappingJewel1.isMoving &&
+      this.currentSwappingJewel2 &&
+      !this.currentSwappingJewel2.isMoving
     ) {
       this.currentSwappingJewel1 = undefined;
       this.currentSwappingJewel2 = undefined;
-
-      this.boardState = "removing";
+      this.isSwapping = false;
+      if (this.shouldRevert) {
+        this.revertSwap(this.initialSelected1, this.initialSelected2);
+      } else {
+        this.removeOrMergeMatches();
+      }
+      this.resetSwappingIndices();
     }
   }
 
-  private updateRemoving(t: number, dt: number) {}
+  private updateFalling() {
+    for (let i = 0; i < this.indicesToFall.length; i++) {
+      const jewel = this.jewels[this.indicesToFall[i]];
+      if (jewel && !jewel.isFalling) {
+        this.indicesToFall[i] = -1;
+      }
+    }
+
+    this.indicesToFall = this.indicesToFall.filter((item) => item !== -1);
+    if (!this.indicesToFall.length) {
+      this.isFalling = false;
+      this.removeOrMergeMatches();
+    }
+  }
+
+  private updateRemoving() {
+    for (let i = 0; i < this.indicesToRemove.length; i++) {
+      const jewel = this.jewels[this.indicesToRemove[i]];
+      if (jewel && jewel.isDisabled) {
+        this.indicesToRemove[i] = -1;
+      }
+    }
+
+    this.indicesToRemove = this.indicesToRemove.filter((item) => item !== -1);
+    if (!this.indicesToRemove.length) {
+      this.isRemovingJewels = false;
+      this.moveJewelsDown();
+    }
+  }
+
+  private createJewel(row: number, col: number, type: number) {
+    const x = this.position.x + this.jewelSize.width * col;
+    const jewelPos: Coords = {
+      x,
+      y:
+        this.position.y -
+        this.size.height * 0.2 -
+        Math.random() * 10 +
+        this.jewelSize.height * row,
+    };
+    const jewel = new Jewel({
+      size: this.jewelSize,
+      position: jewelPos,
+      jewelType: type,
+      boardPos: this.position,
+      boardSize: this.size,
+    });
+
+    jewel.setFalling(
+      { x, y: this.position.y + this.jewelSize.height * row },
+      true,
+    );
+    return jewel;
+  }
+
+  generateJewels(layout: number[]) {
+    for (let i = 0; i < layout.length; i++) {
+      const currType = layout[i];
+      if (currType < 1) continue;
+      const { row, col } = convertTo2dInd(i, this.rows, this.cols);
+      const jewel = this.createJewel(row, col, currType);
+      this.indicesToFall.push(i);
+      this.jewels[i] = jewel;
+    }
+    this.isFalling = true;
+  }
 
   update(t: number, dt: number) {
     this.t = t;
-    // switch (this.boardState) {
-    //   case "swapping":
-    //     this.updateSwapping(t, dt);
-    //     break;
-    // }
     for (let i = 0; i < this.jewels.length; i++) {
       this.jewels[i].update(t, dt);
     }
-    this.checkCollision();
-  }
-
-  generateJewels() {
-    for (let i = 0; i < this.layout.length; i++) {
-      const currType = this.layout[i];
-      const { row, col } = convertTo2dInd(i, this.rows, this.cols);
-      const x = this.position.x + this.jewelSize.width * col;
-
-      const jewelPos: Coords = {
-        x,
-        y:
-          this.position.y -
-          this.size.height / 1.5 -
-          Math.random() * 10 +
-          this.jewelSize.height * row,
-      };
-
-      const jewel = new Jewel({
-        size: this.jewelSize,
-        position: jewelPos,
-        jewelType: currType,
-        board: this,
-      });
-
-      jewel.setFalling({ x, y: this.position.y + this.jewelSize.height * row });
-      this.jewels[i] = jewel;
+    this.healthBar.update(t, dt);
+    if (this.isSwapping) {
+      this.updateSwapping();
     }
+
+    if (this.isFalling) {
+      this.updateFalling();
+      this.checkCollision();
+    }
+    if (this.isRemovingJewels) {
+      this.updateRemoving();
+    }
+    // console.log(
+    //   `isFalling: ${this.isFalling}, isRemoving: ${this.isRemovingJewels}, isSwapping: ${this.isSwapping}`,
+    // );
   }
 
   draw(ctx: CanvasRenderingContext2D) {
@@ -719,6 +845,7 @@ export class Board extends BaseEntity {
       this.size.width,
       this.size.height,
     );
+    this.healthBar.draw(ctx);
     for (let jewelEnt of this.jewels) {
       jewelEnt.draw(ctx);
     }

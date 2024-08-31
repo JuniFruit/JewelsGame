@@ -51,6 +51,8 @@ export class HealthBar extends InteractableEntity {
   }
 
   applyDamage(val: number) {
+    if (this.currentHealth <= 0) return;
+
     this.isApplyingDmg = true;
     this.latestDmg = val;
     this.calculateTextPos(`-${this.latestDmg}`);
@@ -342,10 +344,20 @@ export class UI {
     }
   }
 
+  mouseOut() {
+    this.game?.p1Board.mouseOut();
+    if (this.currentHoveredElement) {
+      this.currentHoveredElement.mouseOut();
+    }
+  }
+
   checkIsMouseIntersecting(mousePos: Coords) {
     if (this.game?.p1Board) {
-      this.game?.p1Board.checkIsHovered(mousePos);
+      this.game?.p1Board.mouseMove(mousePos);
     }
+    // if (this.game?.p2Board) {
+    //   this.game.p2Board.checkIsHovered(mousePos);
+    // }
     if (
       this.currentHoveredElement &&
       this.currentHoveredElement.checkIsHovered(mousePos)

@@ -62,4 +62,5 @@ export class InteractableEntity extends BaseEntity {
   mouseUp() {
     this.isClicking = false;
   }
+  mouseOut() {}
 }

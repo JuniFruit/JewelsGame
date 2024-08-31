@@ -1,10 +1,11 @@
-import { Coords } from "./entities";
 import { Game } from "./Game";
+import { Coords } from "./sharedEntities";
 import { UI } from "./UI";
 import { Debug } from "./utils";
 
 function mouseMove(e: MouseEvent, game: Game, ui: UI, debugInstance?: Debug) {
   const mousePos: Coords = { x: e.offsetX, y: e.offsetY };
+
   ui.checkIsMouseIntersecting(mousePos);
   if (debugInstance) {
     debugInstance.setMouseCoords(mousePos);
@@ -17,6 +18,10 @@ function mouseDown(e: MouseEvent, game: Game, ui: UI, debugInstance?: Debug) {
 
 function mouseUp(e: MouseEvent, game: Game, ui: UI, debugInstance?: Debug) {
   ui.mouseUp();
+}
+
+function mouseOut(e: MouseEvent, game: Game, ui: UI, debugInstance?: Debug) {
+  ui.mouseOut();
 }
 
 export function initInputs(
@@ -35,6 +40,9 @@ export function initInputs(
         break;
       case "mouseup":
         mouseUp(e, game, ui, debugInstance);
+        break;
+      case "mouseout":
+        mouseOut(e, game, ui, debugInstance);
         break;
 
       default:

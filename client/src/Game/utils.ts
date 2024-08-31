@@ -3,8 +3,8 @@
  */
 
 import { BOARD_COLS, BOARD_ROWS, JEWEL_TYPE } from "./config";
-import { Coords, Size } from "./entities";
 import { Game } from "./Game";
+import { Coords, Size } from "./sharedEntities";
 
 export function convertTo2dInd(ind: number, rows: number, cols: number) {
   const row = Math.floor(ind / rows);
@@ -14,6 +14,20 @@ export function convertTo2dInd(ind: number, rows: number, cols: number) {
     row,
     col,
   };
+}
+
+export function getPositionByInd(
+  ind: number,
+  rows: number,
+  cols: number,
+  boardPos: Coords,
+  jewelSize: Size,
+) {
+  const { row, col } = convertTo2dInd(ind, rows, cols);
+  const x = boardPos.x + jewelSize.width * col;
+  const y = boardPos.y + jewelSize.height * row;
+
+  return { x, y };
 }
 
 const hexTransparencyTable: Record<number, string> = {
@@ -158,6 +172,7 @@ export class Debug {
   showDebug() {
     this.ctx.font = this.rectFont;
     this.ctx.fillStyle = this.rectFillStyle;
+    this.ctx.lineWidth = 2;
     this.ctx.strokeStyle = "red";
     this.ctx.strokeRect(0, 0, this.canvasW, this.canvasH);
 

@@ -1,3 +1,4 @@
+import { JEWEL_SPELL_CONVERSION } from "../config";
 import { Board } from "../entities";
 import { test, expect, describe, beforeEach, afterEach } from "vitest";
 
@@ -20,6 +21,17 @@ const layout = [
   3, 1, 4, 5, 1, 4, 6, 2, 4, 5, 4, 8,
 ];
 
+function advanceStateBy(secs: number, board: Board) {
+  const frameTime = 0.016;
+  let left = secs;
+  let t = 0;
+  while (left >= 0) {
+    board.update(t, frameTime);
+    left -= frameTime;
+    t += frameTime;
+  }
+}
+
 describe("Board", () => {
   let board: undefined | Board;
   beforeEach(() => {
@@ -28,6 +40,8 @@ describe("Board", () => {
       size: { width: 0, height: 0 },
       cols: 8,
       rows: 8,
+      player: "p1",
+      health: 100,
     });
     board.generateJewels([...layout]);
   });
@@ -35,16 +49,22 @@ describe("Board", () => {
     board = undefined;
   });
   test("swapping elements at edge", () => {
+    advanceStateBy(5, board!);
     const isSwapped = board?.attemptSwap(13, 5);
     board?.generateJewels([...layout]);
+    advanceStateBy(5, board!);
+
     const isSwappedInverted = board?.attemptSwap(5, 13);
 
     expect(isSwapped).toBe(true);
     expect(isSwappedInverted).toBe(true);
   });
   test("swapping elements at edge (vertical)", () => {
+    advanceStateBy(5, board!);
     const isSwapped = board?.attemptSwap(42, 50);
     board?.generateJewels([...layout]);
+    advanceStateBy(5, board!);
+
     const isSwappedInverted = board?.attemptSwap(50, 42);
 
     expect(isSwapped).toBe(true);
@@ -52,8 +72,12 @@ describe("Board", () => {
   });
 
   test("swapping elements at edge (vertical)", () => {
+    advanceStateBy(5, board!);
+
     const isSwapped = board?.attemptSwap(12, 4);
     board?.generateJewels([...layout]);
+
+    advanceStateBy(5, board!);
 
     const isSwappedInverted = board?.attemptSwap(4, 12);
 
@@ -61,8 +85,12 @@ describe("Board", () => {
     expect(isSwappedInverted).toBe(true);
   });
   test("swapping elements at edge (horizontal)", () => {
+    advanceStateBy(5, board!);
+
     const isSwapped = board?.attemptSwap(16, 17);
+
     board?.generateJewels([...layout]);
+    advanceStateBy(5, board!);
 
     const isSwappedInverted = board?.attemptSwap(17, 16);
 
@@ -70,8 +98,12 @@ describe("Board", () => {
     expect(isSwappedInverted).toBe(true);
   });
   test("swapping illegal selections (diagonal)", () => {
+    advanceStateBy(5, board!);
+
     const isSwapped = board?.attemptSwap(54, 45);
+
     board?.generateJewels([...layout]);
+    advanceStateBy(5, board!);
 
     const isSwappedInverted = board?.attemptSwap(45, 54);
 
@@ -79,15 +111,18 @@ describe("Board", () => {
     expect(isSwappedInverted).toBe(false);
   });
   test("swapping illegal selections (out of bound)", () => {
+    advanceStateBy(5, board!);
     const isSwapped = board?.attemptSwap(65, 4);
     board?.generateJewels([...layout]);
-
+    advanceStateBy(5, board!);
     const isSwappedInverted = board?.attemptSwap(65, 4);
 
     expect(isSwapped).toBe(false);
     expect(isSwappedInverted).toBe(false);
   });
   test("swapping illegal selections (not neighbors)", () => {
+    advanceStateBy(5, board!);
+
     const isSwapped = board?.attemptSwap(42, 44);
     const isSwappedInverted = board?.attemptSwap(44, 42);
     const isSwappedVertical = board?.attemptSwap(14, 54);
@@ -97,5 +132,56 @@ describe("Board", () => {
     expect(isSwappedInverted).toBe(false);
     expect(isSwappedVertical).toBe(false);
     expect(isSwappedInvertedVertical).toBe(false);
+  });
+  test("checking matches and removing", () => {
+    board?.removeOrMergeMatches();
+    const indices = [18, 26, 34, 1, 2, 3];
+
+    indices.forEach((ind) => {
+      expect(board?.jewels[ind].isRemoving).toBe(true);
+    });
+  });
+  test("merge and move down", () => {
+    const initialJewelType = board?.jewels[12].jewelType;
+    board?.swapJewels(12, 4);
+    board?.removeOrMergeMatches();
+    board?.moveJewelsDown();
+    const newJewelType = board!.jewels[4].jewelType;
+
+    expect(newJewelType).toBe(0);
+    expect(board?.jewels[4].isMerging).toBe(true);
+    expect(
+      JEWEL_SPELL_CONVERSION[board!.jewels[2].targetJewelType].parentType,
+    ).toBe(initialJewelType);
+  });
+  test("merge vertical", () => {
+    const initialJewelType = board?.jewels[17].jewelType;
+    board?.swapJewels(16, 17);
+    board?.removeOrMergeMatches();
+
+    console.log(board?.jewels[16]);
+    expect(board?.jewels[8].isConverting).toBe(true);
+    expect(
+      JEWEL_SPELL_CONVERSION[board!.jewels[8].targetJewelType].parentType,
+    ).toBe(initialJewelType);
+  });
+  test("merge vertical", () => {
+    const initialJewelType = board?.jewels[43].jewelType;
+    board?.swapJewels(42, 43);
+    board?.removeOrMergeMatches();
+
+    expect(board?.jewels[26].isConverting).toBe(true);
+    expect(
+      JEWEL_SPELL_CONVERSION[board!.jewels[26].targetJewelType].parentType,
+    ).toBe(initialJewelType);
+  });
+  test("remove after swap", () => {
+    board?.swapJewels(54, 46);
+    board?.removeOrMergeMatches();
+
+    const indices = [44, 45, 46];
+    indices.forEach((ind) => {
+      expect(board?.jewels[ind].isRemoving).toBe(true);
+    });
   });
 });

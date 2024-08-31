@@ -1,4 +1,5 @@
-import { BoardProps, Size } from "./entities";
+import { BoardProps } from "./entities";
+import { Size } from "./sharedEntities";
 import { ButtonProps } from "./UI";
 
 // set debug mode, additional info and buttons will be rendered
@@ -69,6 +70,8 @@ export const JEWEL_SPELL_CONVERSION: Record<string, JewelSpellConversion> = {
 };
 
 // types of jewels existing in the game
+// 1 - 6: regular types
+// 7+: spell types
 export const JEWEL_TYPE = {
   BLUE: 1,
   RED: 2,
@@ -87,12 +90,12 @@ export const JEWEL_TYPE_TO_COLOR: Record<number, string> = {
   4: "green",
   5: "purple",
   6: "brown",
-  7: "#0000b3",
-  8: "#670000",
-  9: "#674200",
-  10: "#006700",
-  11: "#670067",
-  12: "#ce661c",
+  7: "blue",
+  8: "red",
+  9: "orange",
+  10: "green",
+  11: "purple",
+  12: "brown",
 };
 
 export const DEFAULT_FONT_SIZE = "20px";

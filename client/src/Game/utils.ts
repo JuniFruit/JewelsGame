@@ -188,11 +188,6 @@ export class Debug {
     this.ctx.fillText("frameTime: " + this.secondsPassed, 10, 80);
 
     // Board states
-    this.ctx.fillText(
-      "isRemovingJewels: " + this.game.p1Board.isRemovingJewels,
-      10,
-      95,
-    );
     this.ctx.fillText("isFalling: " + this.game.p1Board.isFalling, 10, 110);
     this.ctx.fillText(
       "isReadyToFill: " + this.game.p1Board.isReadyToRefill,

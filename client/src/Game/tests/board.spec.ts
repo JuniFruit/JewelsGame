@@ -154,6 +154,20 @@ describe("Board", () => {
       JEWEL_SPELL_CONVERSION[board!.jewels[2].targetJewelType].parentType,
     ).toBe(initialJewelType);
   });
+  test("after first swap second swap to the removing line should be illeagal", () => {
+    const swap1 = board?.attemptSwap(35, 36);
+    // now we are in removing state
+    const swap2 = board?.attemptSwap(12, 13);
+    expect(swap1).toBe(true);
+    expect(swap2).toBe(false);
+  });
+  test("after swap at the bottom, second swap on the same column but higher should be illeagal", () => {
+    const swap1 = board?.attemptSwap(42, 50);
+    // now we are in removing state
+    const swap2 = board?.attemptSwap(54, 46);
+    expect(swap1).toBe(true);
+    expect(swap2).toBe(false);
+  });
   test("merge vertical", () => {
     const initialJewelType = board?.jewels[17].jewelType;
     board?.swapJewels(16, 17);

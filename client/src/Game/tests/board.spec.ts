@@ -159,7 +159,6 @@ describe("Board", () => {
     board?.swapJewels(16, 17);
     board?.removeOrMergeMatches();
 
-    console.log(board?.jewels[16]);
     expect(board?.jewels[8].isConverting).toBe(true);
     expect(
       JEWEL_SPELL_CONVERSION[board!.jewels[8].targetJewelType].parentType,

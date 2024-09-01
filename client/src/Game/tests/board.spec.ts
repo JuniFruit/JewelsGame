@@ -146,9 +146,7 @@ describe("Board", () => {
     board?.swapJewels(12, 4);
     board?.removeOrMergeMatches();
     board?.moveJewelsDown();
-    const newJewelType = board!.jewels[4].jewelType;
 
-    expect(newJewelType).toBe(0);
     expect(board?.jewels[4].isMerging).toBe(true);
     expect(
       JEWEL_SPELL_CONVERSION[board!.jewels[2].targetJewelType].parentType,
@@ -173,10 +171,14 @@ describe("Board", () => {
     board?.swapJewels(16, 17);
     board?.removeOrMergeMatches();
 
+    const indices = [0, 16, 24];
+
     expect(board?.jewels[8].isConverting).toBe(true);
     expect(
       JEWEL_SPELL_CONVERSION[board!.jewels[8].targetJewelType].parentType,
     ).toBe(initialJewelType);
+
+    indices.forEach((i) => expect(board?.jewels[i].isMerging).toBe(true));
   });
   test("merge vertical", () => {
     const initialJewelType = board?.jewels[43].jewelType;

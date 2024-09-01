@@ -115,7 +115,7 @@ export class Jewel extends InteractableEntity {
   }
 
   isMatchable() {
-    if (this.isMerging || this.isRemoving) {
+    if (this.isMerging || this.isRemoving || this.isConverting) {
       return false;
     }
     return true;
@@ -245,9 +245,6 @@ export class Jewel extends InteractableEntity {
     super.resetMouseStates();
     this.isSelected = false;
     this.isMerging = isMerging;
-    if (isMerging) {
-      this.jewelType = 0;
-    }
     this.targetPosition = { ...pos };
 
     const dx = pos.x - this.position.x;
@@ -1029,6 +1026,9 @@ export class Board extends BaseEntity {
       jewel.update(t, dt);
       if (jewel.isDisabled) {
         disableExists = true;
+      }
+      if (jewel.isMerging) {
+        disableExists = false;
       }
     }
     this.checkCollision();

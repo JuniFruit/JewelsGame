@@ -59,10 +59,8 @@ export class Game {
 
   private addJewels(player: "p1" | "p2") {
     if (player === "p1") {
-      this.p1Board.moveJewelsDown();
       this.test(this.p1Board);
     } else {
-      this.p2Board.moveJewelsDown();
       this.test(this.p2Board);
     }
   }

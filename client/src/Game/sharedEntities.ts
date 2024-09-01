@@ -56,11 +56,11 @@ export class InteractableEntity extends BaseEntity {
     this.isHovered = false;
   }
 
-  mouseDown() {
+  mouseDown(_mousePos: Coords) {
     this.isClicking = true;
   }
-  mouseUp() {
+  mouseUp(_mousePos: Coords) {
     this.isClicking = false;
   }
-  mouseOut() {}
+  mouseOut(_mousePos: Coords) {}
 }

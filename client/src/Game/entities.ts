@@ -295,7 +295,7 @@ export class Jewel extends InteractableEntity {
 
   remove() {
     this.isRemoving = true;
-    this.removeAnimTime = 0.5;
+    this.removeAnimTime = 2;
   }
 
   private stopMoving() {
@@ -310,7 +310,7 @@ export class Jewel extends InteractableEntity {
     }
     if (this.isMerging) {
       this.isMerging = false;
-      this.disable();
+      this.stopRemoving();
     }
   }
 
@@ -439,10 +439,6 @@ export class Board extends BaseEntity {
   private healthBar: HealthBar;
   private hoveredInd = -1;
   private selectedInd = -1;
-  // private initialSelected1 = -1;
-  // private initialSelected2 = -1;
-  // private currentSwappingJewel1: Jewel | undefined;
-  // private currentSwappingJewel2: Jewel | undefined;
   private currentDragging: Jewel | undefined;
   private currentDraggingInd = -1;
   private indicesToRemove: number[] = [];
@@ -505,16 +501,6 @@ export class Board extends BaseEntity {
     });
   }
 
-  // private setDragging(ind: number) {
-  //   if (ind > -1) {
-  //     this.currentDragging = this.jewels[ind];
-  //     this.currentDragging.isDragging = true;
-  //   } else {
-  //     this.currentDragging?.isDragging = false
-  //     this.currentDragging = undefined;
-  //   }
-  // }
-
   private compareTypes(type1: number, type2: number) {
     if (type1 === 0 || type2 === 0) {
       return false;
@@ -530,14 +516,22 @@ export class Board extends BaseEntity {
   /**
    * Move into all 4 directions simultaneously, get all matches by the plane
    * startInd - index from where we start checking process
-   *
+   * advanceForward - limit check to only 2 directions up and left
    */
-  private getMatchesFromPos(type: number, startInd: number): Matches {
+  private getMatchesFromPos(
+    type: number,
+    startInd: number,
+    advanceForward = false,
+  ): Matches {
     // init all 4 runners, make them next step on start
     let vertUp: number | null = startInd - this.cols;
     let vertDown: number | null = startInd + this.cols;
     let horLeft: number | null = startInd - 1;
     let horRight: number | null = startInd + 1;
+    if (advanceForward) {
+      horRight = null;
+      vertDown = null;
+    }
     const { row: startRow } = convertTo2dInd(startInd, this.rows, this.cols);
     const horMatches: number[] = [];
     const vertMatches: number[] = [];
@@ -624,6 +618,7 @@ export class Board extends BaseEntity {
     if (vertMatches.length < 3 && horMatches.length < 3) {
       return;
     }
+    this.isRemovingJewels = true;
 
     if (vertMatches.length === 3) {
       this.removeLine(vertMatches);
@@ -666,7 +661,7 @@ export class Board extends BaseEntity {
     indices.sort((a, b) => a - b);
 
     const mergeInd = Math.floor(indices.length >> 1) - 1;
-    const type = this.jewels[indices[0]].jewelType;
+    const type = this.jewels[indices[mergeInd]].jewelType;
     const matches = indices.length;
     const mergeTo = this.findConversion(type, matches);
 
@@ -721,7 +716,8 @@ export class Board extends BaseEntity {
       this.shouldRevert = true;
       return false;
     }
-    this.removeOrMergeMatches();
+    this.removeOrMerge(matches1);
+    this.removeOrMerge(matches2);
 
     return true;
   }
@@ -729,10 +725,7 @@ export class Board extends BaseEntity {
   removeOrMergeMatches() {
     for (let i = this.jewels.length - 1; i >= 0; i--) {
       const jewel = this.jewels[i];
-      const matches = this.getMatchesFromPos(jewel.jewelType, i);
-      if (matches.horMatches.length >= 3 || matches.vertMatches.length >= 3) {
-        this.isRemovingJewels = true;
-      }
+      const matches = this.getMatchesFromPos(jewel.jewelType, i, true);
       this.removeOrMerge(matches);
     }
   }
@@ -774,6 +767,7 @@ export class Board extends BaseEntity {
         this.moveLineDown(i);
       }
     }
+    this.isReadyToRefill = true;
   }
 
   private updateDragging(mousePos: Coords) {
@@ -812,10 +806,10 @@ export class Board extends BaseEntity {
     }
   }
 
-  mouseDown() {
+  mouseDown(mousePos: Coords) {
     if (this.hoveredInd > -1) {
       const currJewel = this.jewels[this.hoveredInd];
-      currJewel.mouseDown();
+      currJewel.mouseDown(mousePos);
       currJewel.resetMouseStates();
       currJewel.isDragging = true;
       this.currentDraggingInd = this.hoveredInd;
@@ -839,7 +833,7 @@ export class Board extends BaseEntity {
     this.resetSwappingIndices();
   }
 
-  mouseUp() {
+  mouseUp(_mousePos: Coords) {
     if (this.selectedInd === this.currentDraggingInd || this.selectedInd < 0) {
       this.resetDragging();
     }
@@ -862,8 +856,8 @@ export class Board extends BaseEntity {
     }
   }
 
-  mouseOut() {
-    this.mouseUp();
+  mouseOut(mousePos: Coords) {
+    this.mouseUp(mousePos);
   }
 
   mouseMove(mousePos: Coords) {
@@ -921,11 +915,12 @@ export class Board extends BaseEntity {
         this.indicesToRemove[i] = -1;
       }
     }
+    console.log(this.indicesToRemove);
 
     this.indicesToRemove = this.indicesToRemove.filter((item) => item !== -1);
     if (!this.indicesToRemove.length) {
       this.isRemovingJewels = false;
-      this.isReadyToRefill = true;
+      this.moveJewelsDown();
     }
   }
 

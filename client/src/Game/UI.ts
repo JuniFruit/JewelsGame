@@ -329,25 +329,25 @@ export class UI {
     this.screens.set(key, layout);
   }
 
-  mouseDown() {
-    this.game?.p1Board?.mouseDown();
+  mouseDown(mousePos: Coords) {
+    this.game?.p1Board?.mouseDown(mousePos);
     if (this.currentHoveredElement) {
-      this.currentHoveredElement.mouseDown();
+      this.currentHoveredElement.mouseDown(mousePos);
     }
   }
 
-  mouseUp() {
-    this.game?.p1Board?.mouseUp();
+  mouseUp(mousePos: Coords) {
+    this.game?.p1Board?.mouseUp(mousePos);
 
     if (this.currentHoveredElement) {
-      this.currentHoveredElement.mouseUp();
+      this.currentHoveredElement.mouseUp(mousePos);
     }
   }
 
-  mouseOut() {
-    this.game?.p1Board.mouseOut();
+  mouseOut(mousePos: Coords) {
+    this.game?.p1Board.mouseOut(mousePos);
     if (this.currentHoveredElement) {
-      this.currentHoveredElement.mouseOut();
+      this.currentHoveredElement.mouseOut(mousePos);
     }
   }
 

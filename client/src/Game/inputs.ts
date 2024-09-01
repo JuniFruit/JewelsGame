@@ -3,7 +3,7 @@ import { Coords } from "./sharedEntities";
 import { UI } from "./UI";
 import { Debug } from "./utils";
 
-function mouseMove(e: MouseEvent, game: Game, ui: UI, debugInstance?: Debug) {
+function mouseMove(e: MouseEvent, _game: Game, ui: UI, debugInstance?: Debug) {
   const mousePos: Coords = { x: e.offsetX, y: e.offsetY };
 
   ui.checkIsMouseIntersecting(mousePos);
@@ -12,16 +12,22 @@ function mouseMove(e: MouseEvent, game: Game, ui: UI, debugInstance?: Debug) {
   }
 }
 
-function mouseDown(e: MouseEvent, game: Game, ui: UI, debugInstance?: Debug) {
-  ui.mouseDown();
+function mouseDown(e: MouseEvent, _game: Game, ui: UI, _debugInstance?: Debug) {
+  const mousePos: Coords = { x: e.offsetX, y: e.offsetY };
+
+  ui.mouseDown(mousePos);
 }
 
-function mouseUp(e: MouseEvent, game: Game, ui: UI, debugInstance?: Debug) {
-  ui.mouseUp();
+function mouseUp(e: MouseEvent, _game: Game, ui: UI, _debugInstance?: Debug) {
+  const mousePos: Coords = { x: e.offsetX, y: e.offsetY };
+
+  ui.mouseUp(mousePos);
 }
 
-function mouseOut(e: MouseEvent, game: Game, ui: UI, debugInstance?: Debug) {
-  ui.mouseOut();
+function mouseOut(e: MouseEvent, _game: Game, ui: UI, _debugInstance?: Debug) {
+  const mousePos: Coords = { x: e.offsetX, y: e.offsetY };
+
+  ui.mouseOut(mousePos);
 }
 
 export function initInputs(

@@ -154,15 +154,17 @@ describe("Board", () => {
   });
   test("after first swap second swap to the removing line should be illeagal", () => {
     const swap1 = board?.attemptSwap(35, 36);
+    board?.removeOrMergeMatches();
     // now we are in removing state
     const swap2 = board?.attemptSwap(12, 13);
     expect(swap1).toBe(true);
     expect(swap2).toBe(false);
   });
   test("after swap at the bottom, second swap on the same column but higher should be illeagal", () => {
-    const swap1 = board?.attemptSwap(42, 50);
     // now we are in removing state
-    const swap2 = board?.attemptSwap(54, 46);
+    const swap1 = board?.attemptSwap(54, 46);
+    board?.removeOrMergeMatches();
+    const swap2 = board?.attemptSwap(38, 37);
     expect(swap1).toBe(true);
     expect(swap2).toBe(false);
   });

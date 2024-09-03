@@ -48,9 +48,9 @@ export class Jewel extends InteractableEntity {
   targetPosition: Coords;
   movingVec: Vector = new Vector({ x: 0, y: 0 });
   // constants
-  movingVelFactor = 8;
-  draggingVelFactor = 50;
-  fallingTimeSim = 0.7; // in seconds
+  movingVelFactor = 5;
+  draggingVelFactor = 40;
+  fallingTimeSim = 0.5; // in seconds
   bounce = -0.2;
   // states
   isSpell = false;
@@ -115,7 +115,7 @@ export class Jewel extends InteractableEntity {
   }
 
   isMatchable() {
-    if (this.isMerging || this.isRemoving || this.isConverting) {
+    if (this.isMerging || this.isRemoving) {
       return false;
     }
     return true;
@@ -184,12 +184,7 @@ export class Jewel extends InteractableEntity {
   }
 
   isSwappable() {
-    if (
-      this.isDisabled ||
-      this.isMerging ||
-      this.isPhysicalized ||
-      this.isRemoving
-    ) {
+    if (this.isDisabled || this.isMerging || this.isRemoving) {
       return false;
     }
 
@@ -226,6 +221,8 @@ export class Jewel extends InteractableEntity {
   }
 
   swap(otherJewel: Jewel) {
+    this.isDragging = false;
+    otherJewel.isDragging = false;
     this.moveTo(otherJewel.getIndexPos());
     otherJewel.moveTo(this.getIndexPos());
     const temp = this.index;
@@ -240,12 +237,15 @@ export class Jewel extends InteractableEntity {
     return dx < speed && dy < speed;
   }
 
-  moveTo(pos: Coords, isMerging = false) {
+  moveTo(pos: Coords, isMerging = false, useVelocityFactor = false) {
     // this.reset();
     super.resetMouseStates();
     this.isSelected = false;
     this.isMerging = isMerging;
     this.targetPosition = { ...pos };
+    // if (isMerging) {
+    //   this.jewelType = 0;
+    // }
 
     const dx = pos.x - this.position.x;
     const dy = pos.y - this.position.y;
@@ -254,9 +254,10 @@ export class Jewel extends InteractableEntity {
 
     if (!distance) return;
 
-    const velFactor = this.isDragging
-      ? this.draggingVelFactor
-      : this.movingVelFactor;
+    const velFactor =
+      this.isDragging || useVelocityFactor
+        ? this.draggingVelFactor
+        : this.movingVelFactor;
 
     this.movingVec.setLength(distance * 0.5 * velFactor);
     this.movingVec.setAngle(angle);
@@ -304,8 +305,9 @@ export class Jewel extends InteractableEntity {
   }
 
   remove() {
+    if (this.isMerging) return;
     this.isRemoving = true;
-    this.removeAnimTime = 0.1;
+    this.removeAnimTime = 2;
   }
 
   private stopMoving() {
@@ -346,7 +348,6 @@ export class Jewel extends InteractableEntity {
     this.fallingAnimTime -= dt;
     this.fallingVec.y += GRAVITY_VEC.y;
     this.position.y += this.fallingVec.y * dt;
-    console.log(this.fallingVec.y);
 
     if (this.fallingAnimTime <= 0) {
       this.stopFalling();
@@ -456,6 +457,8 @@ export class Board extends BaseEntity {
   private indicesToFall: number[] = [];
   private spellsToCast: unknown[] = []; // queue for spells to cast
   private opponentBoard: Board | undefined;
+  private currentSwapping: Jewel | undefined;
+  // private indicesToRemove: number[][] = [];
   // states
   shouldRevert = false;
   isSwapping = false;
@@ -724,12 +727,14 @@ export class Board extends BaseEntity {
     const matches2 = this.filterCollapsingMatches(
       this.getMatchesFromPos(this.jewels[ind2].jewelType, ind2),
     );
+    console.log(matches1, matches2);
     if (!this.isMatchesLegal(matches1) && !this.isMatchesLegal(matches2)) {
       this.shouldRevert = true;
       return false;
     }
-    this.removeOrMerge(matches1);
-    this.removeOrMerge(matches2);
+    this.currentSwapping = this.jewels[ind2];
+    // this.removeOrMerge(matches1);
+    // this.removeOrMerge(matches2);
 
     return true;
   }
@@ -792,6 +797,8 @@ export class Board extends BaseEntity {
       const el1 = this.jewels[startInd];
       const el2 = this.jewels[elementInd];
 
+      if (el2.isMerging) break;
+
       if (el1.jewelType === 0 && el2.jewelType !== 0) {
         // swap elements
         this.jewels[elementInd].index = startInd;
@@ -812,6 +819,7 @@ export class Board extends BaseEntity {
         elementInd = elementInd - this.cols;
       }
     }
+    this.isReadyToRefill = true;
   }
 
   moveJewelsDown() {
@@ -821,7 +829,6 @@ export class Board extends BaseEntity {
         this.moveLineDown(i);
       }
     }
-    this.isReadyToRefill = true;
   }
 
   private updateDragging(mousePos: Coords) {
@@ -952,30 +959,32 @@ export class Board extends BaseEntity {
       const jewel = this.jewels[this.indicesToFall[i]];
       if (jewel && !jewel.isFalling) {
         this.indicesToFall[i] = -1;
+        this.removeOrMerge(
+          this.getMatchesFromPos(jewel.jewelType, jewel.index),
+        );
+        // this.removeOrMergeMatches();
       }
     }
 
     this.indicesToFall = this.indicesToFall.filter((item) => item !== -1);
     if (!this.indicesToFall.length) {
       this.isFalling = false;
-      this.removeOrMergeMatches();
+      // this.removeOrMergeMatches();
     }
   }
 
   // private updateRemoving() {
   //   for (let i = 0; i < this.indicesToRemove.length; i++) {
-  //     const jewel = this.jewels[this.indicesToRemove[i]];
-  //     if (jewel && jewel.isDisabled) {
-  //       this.indicesToRemove[i] = -1;
+  //     const pack = this.indicesToRemove[i].filter(
+  //       (ind) => !this.jewels[ind].isDisabled,
+  //     );
+  //     if (!pack.length) {
+  //       this.indicesToRemove[i] = [];
+  //       this.moveJewelsDown();
   //     }
   //   }
+  //   this.indicesToRemove = this.indicesToRemove.filter((item) => item.length);
   //   console.log(this.indicesToRemove);
-  //
-  //   this.indicesToRemove = this.indicesToRemove.filter((item) => item !== -1);
-  //   if (!this.indicesToRemove.length) {
-  //     this.isRemovingJewels = false;
-  //     this.moveJewelsDown();
-  //   }
   // }
 
   private createJewel(i: number, type: number) {
@@ -985,7 +994,7 @@ export class Board extends BaseEntity {
       x,
       y:
         this.position.y -
-        this.size.height * 0.2 -
+        this.size.height * 0.5 -
         Math.random() * 10 +
         this.jewelSize.height * row,
     };
@@ -1020,15 +1029,17 @@ export class Board extends BaseEntity {
 
   update(t: number, dt: number) {
     this.t = t;
-    let disableExists = false;
+    if (this.currentSwapping && !this.currentSwapping.isMoving) {
+      this.currentSwapping = undefined;
+      this.removeOrMergeMatches();
+    }
+    let disabledExist = false;
     for (let i = 0; i < this.jewels.length; i++) {
       const jewel = this.jewels[i];
       jewel.update(t, dt);
+
       if (jewel.isDisabled) {
-        disableExists = true;
-      }
-      if (jewel.isMerging) {
-        disableExists = false;
+        disabledExist = true;
       }
     }
     this.checkCollision();
@@ -1038,7 +1049,8 @@ export class Board extends BaseEntity {
     if (this.isFalling) {
       this.updateFalling();
     }
-    if (disableExists) {
+
+    if (disabledExist) {
       this.moveJewelsDown();
     }
     // if (this.isRemovingJewels) {

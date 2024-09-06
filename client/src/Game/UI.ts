@@ -228,14 +228,14 @@ export class Button extends InteractableEntity {
       this.textMeasure.fontBoundingBoxAscent;
   }
 
-  mouseDown(): void {
-    super.mouseDown();
+  mouseDown(mousePos: Coords): void {
+    super.mouseDown(mousePos);
     this.position.y += 1;
     this.calculateTextPos();
   }
 
-  mouseUp(): void {
-    super.mouseUp();
+  mouseUp(mousePos: Coords): void {
+    super.mouseUp(mousePos);
     if (this.onClickCb) {
       this.onClickCb();
     } else {

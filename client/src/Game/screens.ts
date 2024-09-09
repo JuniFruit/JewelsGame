@@ -63,6 +63,30 @@ function debugButtons(ctx: CanvasRenderingContext2D, debugInstance: Debug) {
       fontSize: "10px",
       onClick: () => debugInstance.setTestBoards(false),
     }),
+    new Button({
+      position: {
+        x: 650,
+        y: 80,
+      },
+      ctx,
+      ...DEFAULT_BUTTON_THEME,
+      text: "Jewel info",
+      padding: 10,
+      fontSize: "10px",
+      onClick: () => debugInstance.toggleJewelsDebug(),
+    }),
+    new Button({
+      position: {
+        x: 550,
+        y: 80,
+      },
+      ctx,
+      ...DEFAULT_BUTTON_THEME,
+      text: "Slow time",
+      padding: 10,
+      fontSize: "10px",
+      onClick: () => debugInstance.slowTime(),
+    }),
   ];
   return elements;
 }

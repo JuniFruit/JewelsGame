@@ -67,9 +67,9 @@ export class Game {
 
   setBoard(layout: number[], player: "p1" | "p2") {
     if (player === "p1") {
-      this.p1Board.generateJewels(layout);
+      this.p1Board.generateJewels(layout, true);
     } else {
-      this.p2Board.generateJewels(layout);
+      this.p2Board.generateJewels(layout, true);
     }
     this.p1Board.setOpponentBoard(this.p2Board);
     this.p2Board.setOpponentBoard(this.p1Board);

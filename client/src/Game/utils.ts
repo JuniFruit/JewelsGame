@@ -115,7 +115,9 @@ export class Debug {
   canvasW = 0;
   canvasH = 0;
   secondsPassed = 0;
+  jewelDebug = false;
   timePassed = 0;
+  isSlowTime = false;
   debugLayout: number[] = [];
   isFPSThrottling = false;
   FPSThrottle = 0.05; // ~15fps
@@ -169,7 +171,50 @@ export class Debug {
     this.timePassed = timePassed;
   }
 
+  toggleJewelsDebug() {
+    this.jewelDebug = !this.jewelDebug;
+  }
+
+  slowTime() {
+    this.isSlowTime = !this.isSlowTime;
+  }
+
   showDebug() {
+    if (this.jewelDebug) {
+      for (let i = 0; i < this.game.p1Board.jewels.length; i++) {
+        const jewel = this.game.p1Board.jewels[i];
+        this.ctx.fillText(
+          `${jewel.index}`,
+          jewel.position.x + jewel.size.width * 0.8,
+          jewel.position.y + jewel.size.height * 0.9,
+        );
+        this.ctx.fillText(
+          `mer:${jewel.isMerging}`,
+          jewel.position.x,
+          jewel.position.y + 10,
+        );
+        this.ctx.fillText(
+          `mov:${jewel.isMoving}`,
+          jewel.position.x,
+          jewel.position.y + 20,
+        );
+        this.ctx.fillText(
+          `rem:${jewel.isRemoving}`,
+          jewel.position.x,
+          jewel.position.y + 30,
+        );
+        this.ctx.fillText(
+          `sw:${jewel.isSwapping}`,
+          jewel.position.x,
+          jewel.position.y + 40,
+        );
+        this.ctx.fillText(
+          `t:${jewel.jewelType}`,
+          jewel.position.x,
+          jewel.position.y + 50,
+        );
+      }
+    }
     this.ctx.font = this.rectFont;
     this.ctx.fillStyle = this.rectFillStyle;
     this.ctx.lineWidth = 2;
@@ -197,4 +242,4 @@ export class Debug {
   }
 }
 
-export const GRAVITY_VEC = new Vector({ x: 0, y: 9.8 });
+export const GRAVITY_VEC = new Vector({ x: 0, y: 20 });

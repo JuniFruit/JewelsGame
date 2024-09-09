@@ -280,7 +280,7 @@ export class Jewel extends InteractableEntity {
       return;
     }
 
-    let length = distance * 0.6 * this.movingVelFactor;
+    let length = distance * 0.5 * this.movingVelFactor;
     if (this.isSwapping) {
       length = distance * 0.6 * 10;
     }
@@ -817,7 +817,7 @@ export class Board extends BaseEntity {
   removeOrMergeMatches() {
     for (let i = this.jewels.length - 1; i >= 0; i--) {
       const jewel = this.jewels[i];
-      const matches = this.getMatchesFromPos(jewel.jewelType, i, true);
+      const matches = this.getMatchesFromPos(jewel.jewelType, i);
       this.removeOrMerge(matches);
     }
   }
@@ -1019,7 +1019,7 @@ export class Board extends BaseEntity {
       y:
         this.position.y -
         this.jewelSize.height * (totalRows - row + 1) -
-        Math.random() * 10,
+        (isPhysicalized ? Math.random() * 10 : 0),
     };
     const jewel = new Jewel({
       size: this.jewelSize,

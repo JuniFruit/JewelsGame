@@ -1,5 +1,5 @@
 import { JEWEL_TYPE, P1_BOARD, P2_BOARD } from "./config";
-import { Board } from "./entities";
+import { Board } from "./board";
 
 export type GameProps = {
   mode?: string;

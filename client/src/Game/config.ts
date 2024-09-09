@@ -1,4 +1,4 @@
-import { BoardProps } from "./entities";
+import { BoardProps } from "./board";
 import { Size } from "./sharedEntities";
 import { ButtonProps } from "./UI";
 

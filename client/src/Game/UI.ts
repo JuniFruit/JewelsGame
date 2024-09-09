@@ -1,6 +1,6 @@
 import { FONT, FontWeight } from "./assets/fonts/fonts";
 import { DEFAULT_FONT_SIZE } from "./config";
-import { Board } from "./entities";
+import { Board } from "./board";
 import { Game } from "./Game";
 import {
   BaseEntityProps,

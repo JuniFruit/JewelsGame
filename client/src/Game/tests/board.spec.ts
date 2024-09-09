@@ -1,5 +1,5 @@
 import { JEWEL_SPELL_CONVERSION } from "../config";
-import { Board } from "../entities";
+import { Board } from "../board";
 import { test, expect, describe, beforeEach } from "vitest";
 
 /**

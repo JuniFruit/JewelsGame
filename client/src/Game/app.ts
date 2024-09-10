@@ -21,7 +21,7 @@ export async function init(canvas: HTMLCanvasElement) {
     throw new Error("Your browser does not support this game");
   }
   ctx = context;
-  setCanvasSize(context);
+  setCanvasSize(canvas);
   ui = new UI(context);
   await initFonts(ui);
   game = new Game({ ctx });

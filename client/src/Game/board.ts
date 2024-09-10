@@ -11,6 +11,7 @@ import {
   InteractableEntity,
   Size,
 } from "./sharedEntities";
+import { Sprite } from "./images";
 import { HealthBar } from "./UI";
 import {
   convertTo2dInd,
@@ -42,6 +43,8 @@ export class Jewel extends InteractableEntity {
   convertAnimTime: number = 0;
   removeAnimTime: number = 0;
   fallingAnimTime: number = 0;
+  // sprites
+  jewelSprite: Sprite | undefined;
   // Diminished size for deeper collision detection
   draggingDetectionSize: Size;
   opacity: number = 1; // for debbuggin, most likely to be removed
@@ -110,6 +113,8 @@ export class Jewel extends InteractableEntity {
     this.isRemoving = false;
     this.isSwapping = false;
   }
+
+  private setJewelSprite() {}
 
   checkDraggingCollision(otherJewel: Jewel) {
     return detectCollision(
@@ -377,7 +382,6 @@ export class Jewel extends InteractableEntity {
 
   private updateFalling(_t: number, dt: number) {
     if (this.index === 63) {
-      console.log(this.position);
     }
     this.fallingAnimTime -= dt;
     this.fallingVec.y += GRAVITY_VEC.y;
@@ -1050,7 +1054,6 @@ export class Board extends BaseEntity {
   }
 
   generateJewels(layout: number[], isGameStart = false) {
-    console.log(layout);
     const totalRows = this.getTotalRows(layout);
     for (let i = 0; i < layout.length; i++) {
       const currType = layout[i];

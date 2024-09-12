@@ -6,6 +6,16 @@ import { BOARD_COLS, BOARD_ROWS, JEWEL_TYPE } from "./config";
 import { Game } from "./Game";
 import { Coords, Size } from "./sharedEntities";
 
+export type ImageConfig = {
+  framesHold?: number;
+  framesMaxWidth?: number;
+  framesMaxHeight?: number;
+  frameStartCol?: number;
+  frameStartRow?: number;
+  scale?: number;
+  isLooped?: boolean;
+};
+
 export function convertTo2dInd(ind: number, rows: number, cols: number) {
   const row = Math.floor(ind / rows);
   const col = ind % cols;

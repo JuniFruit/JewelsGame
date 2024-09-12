@@ -20,5 +20,5 @@
     "noFallthroughCasesInSwitch": true
   },
   "include": ["src"],
-  "exclude": ["*.ttf", "tests/"]
+  "exclude": ["*.ttf", "tests/", "*.png"]
 }

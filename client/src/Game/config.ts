@@ -1,7 +1,6 @@
 import { BoardProps } from "./board";
 import { Size } from "./sharedEntities";
 import { ButtonProps } from "./UI";
-import { ImageConfig } from "./utils";
 
 // set debug mode, additional info and buttons will be rendered
 export const DEBUG = true;
@@ -13,7 +12,7 @@ export const MOUSE_SIZE: Size = {
 
 // default board container size
 export const BOARD_SIZE: Size = {
-  width: 400,
+  width: 450,
   height: 500,
 };
 
@@ -110,8 +109,4 @@ export const DEFAULT_BUTTON_THEME: Pick<
   bgColor: "#8a2be2",
   padding: 5,
   fontColor: "#ffffff",
-};
-
-export const imageConfigs: Record<string, ImageConfig> = {
-  [JEWEL_TYPE.RED]: {},
 };

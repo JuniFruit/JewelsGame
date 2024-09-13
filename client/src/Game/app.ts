@@ -1,6 +1,7 @@
 import { setCanvasSize } from "./canvas";
 import { DEBUG } from "./config";
 import { Game } from "./Game";
+import { initAllImages } from "./images";
 import { initInputs } from "./inputs";
 import { initGameScreens } from "./screens";
 import { initFonts, UI } from "./UI";
@@ -24,6 +25,7 @@ export async function init(canvas: HTMLCanvasElement) {
   setCanvasSize(canvas);
   ui = new UI(context);
   await initFonts(ui);
+  await initAllImages();
   game = new Game({ ctx });
   debugInstance = DEBUG ? new Debug(game, context) : undefined;
 

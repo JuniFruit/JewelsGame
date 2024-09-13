@@ -11,7 +11,7 @@ import {
   InteractableEntity,
   Size,
 } from "./sharedEntities";
-import { Sprite } from "./images";
+import { createSprite, Sprite } from "./images";
 import { HealthBar } from "./UI";
 import {
   convertTo2dInd,
@@ -53,6 +53,7 @@ export class Jewel extends InteractableEntity {
   targetPosition: Coords;
   movingVec: Vector = new Vector({ x: 0, y: 0 });
   // constants
+  dragRescaleFactor = 1.2;
   movingVelFactor = 5;
   draggingVelFactor = 40;
   fallingTimeSim = 2; // in seconds
@@ -94,12 +95,24 @@ export class Jewel extends InteractableEntity {
       width: size.width * sizeFactor,
       height: size.height * sizeFactor,
     };
+    this.setJewelSprite();
   }
 
   disable() {
     this.reset();
     this.jewelType = 0;
     this.isDisabled = true;
+  }
+
+  setDragging(val: boolean) {
+    this.isDragging = val;
+    if (val && this.jewelSprite) {
+      this.jewelSprite.rescale(
+        this.jewelSprite.initialScale * this.dragRescaleFactor,
+      );
+    } else if (this.jewelSprite) {
+      this.jewelSprite.rescale(this.jewelSprite.initialScale);
+    }
   }
 
   private reset() {
@@ -114,7 +127,10 @@ export class Jewel extends InteractableEntity {
     this.isSwapping = false;
   }
 
-  private setJewelSprite() {}
+  private setJewelSprite() {
+    this.jewelSprite = createSprite(this.position, this.size, this.jewelType);
+    this.jewelSprite?.play();
+  }
 
   checkDraggingCollision(otherJewel: Jewel) {
     return detectCollision(
@@ -244,10 +260,10 @@ export class Jewel extends InteractableEntity {
   }
 
   swap(otherJewel: Jewel) {
-    this.isDragging = false;
+    this.setDragging(false);
     this.isSwapping = true;
     otherJewel.isSwapping = true;
-    otherJewel.isDragging = false;
+    otherJewel.setDragging(false);
     this.moveTo(otherJewel.getIndexPos());
     otherJewel.moveTo(this.getIndexPos());
     const temp = this.index;
@@ -314,7 +330,7 @@ export class Jewel extends InteractableEntity {
   }
 
   setFalling(targetPos: Coords, isPhysicalized = false) {
-    this.isDragging = false;
+    this.setDragging(false);
     this.isFalling = true;
     if (!isPhysicalized) {
       this.moveTo(targetPos);
@@ -399,6 +415,13 @@ export class Jewel extends InteractableEntity {
     }
   }
 
+  private updateAnimations(_t: number, dt: number) {
+    if (this.jewelSprite) {
+      this.jewelSprite.update(_t, dt);
+      this.jewelSprite.position = this.position;
+    }
+  }
+
   private updateRemoving(_t: number, dt: number) {
     this.removeAnimTime -= dt;
     if (this.removeAnimTime <= 0) {
@@ -428,10 +451,12 @@ export class Jewel extends InteractableEntity {
     if (this.isFalling && this.isPhysicalized) {
       this.updateFalling(t, dt);
     }
+    this.updateAnimations(t, dt);
   }
 
   draw(ctx: CanvasRenderingContext2D) {
     if (this.isDisabled) return;
+
     if (this.isHovered && !this.isSelected) {
       ctx.lineWidth = 10;
       ctx.strokeStyle = "white";
@@ -451,7 +476,6 @@ export class Jewel extends InteractableEntity {
         this.size.height,
       );
     }
-    ctx.fillStyle = JEWEL_TYPE_TO_COLOR[this.jewelType];
     if (this.isRemoving) {
       ctx.lineWidth = 10;
 
@@ -463,12 +487,17 @@ export class Jewel extends InteractableEntity {
         this.size.height,
       );
     }
-    ctx.fillRect(
-      this.position.x,
-      this.position.y,
-      this.size.width,
-      this.size.height,
-    );
+    if (this.jewelSprite) {
+      this.jewelSprite.draw(ctx);
+    } else {
+      ctx.fillStyle = JEWEL_TYPE_TO_COLOR[this.jewelType];
+      ctx.fillRect(
+        this.position.x,
+        this.position.y,
+        this.size.width,
+        this.size.height,
+      );
+    }
   }
 }
 
@@ -878,7 +907,7 @@ export class Board extends BaseEntity {
       const currJewel = this.jewels[this.hoveredInd];
       currJewel.mouseDown(mousePos);
       currJewel.resetMouseStates();
-      currJewel.isDragging = true;
+      currJewel.setDragging(true);
       this.currentDraggingInd = this.hoveredInd;
     }
   }
@@ -886,7 +915,7 @@ export class Board extends BaseEntity {
   private resetDragging() {
     if (this.currentDraggingInd > -1) {
       const currentDragging = this.jewels[this.currentDraggingInd];
-      currentDragging.isDragging = false;
+      currentDragging.setDragging(false);
       if (!currentDragging.isMerging) {
         currentDragging.moveToIndPos();
       }
@@ -1026,7 +1055,7 @@ export class Board extends BaseEntity {
         (isPhysicalized ? Math.random() * 10 : 0),
     };
     const jewel = new Jewel({
-      size: this.jewelSize,
+      size: { ...this.jewelSize },
       position: jewelPos,
       jewelType: type,
       boardPos: this.position,

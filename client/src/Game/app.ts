@@ -1,4 +1,4 @@
-import { setCanvasSize } from "./canvas";
+import { setCanvasSize, setSmoothing } from "./canvas";
 import { DEBUG } from "./config";
 import { Game } from "./Game";
 import { initAllImages } from "./images";
@@ -23,6 +23,7 @@ export async function init(canvas: HTMLCanvasElement) {
   }
   ctx = context;
   setCanvasSize(canvas);
+  setSmoothing(ctx);
   ui = new UI(context);
   await initFonts(ui);
   await initAllImages();

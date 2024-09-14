@@ -12,3 +12,8 @@ export function setCanvasSize(canvas: HTMLCanvasElement) {
     context!.scale(ratio, ratio);
   }
 }
+
+export function setSmoothing(ctx: CanvasRenderingContext2D) {
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+}

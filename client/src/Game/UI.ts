@@ -264,7 +264,7 @@ export class Button extends InteractableEntity {
       this.textMeasure.hangingBaseline * 0.5;
   }
 
-  draw() {
+  draw(_ctx: CanvasRenderingContext2D) {
     this.ctx.font = this.currentFont;
     if (this.isHovered) {
       this.ctx.fillStyle = this.bgHoverColor;
@@ -285,7 +285,7 @@ export class Button extends InteractableEntity {
 export type ScreenLayout = {
   screenName: string;
   background: string;
-  elements: Button[];
+  elements: InteractableEntity[];
 };
 
 export class UI {
@@ -375,7 +375,7 @@ export class UI {
 
   draw() {
     for (let i = 0; i < this.currentElements.length; i++) {
-      this.currentElements[i].draw();
+      this.currentElements[i].draw(this.ctx);
     }
   }
 }

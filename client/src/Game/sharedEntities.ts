@@ -30,6 +30,8 @@ export class BaseEntity {
     this.initialPos = { ...position };
     this.initialSize = { ...size };
   }
+
+  draw(_ctx: CanvasRenderingContext2D) {}
 }
 
 export class InteractableEntity extends BaseEntity {

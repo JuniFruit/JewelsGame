@@ -12,7 +12,7 @@ export const MOUSE_SIZE: Size = {
 
 // default board container size
 export const BOARD_SIZE: Size = {
-  width: 450,
+  width: 400,
   height: 500,
 };
 

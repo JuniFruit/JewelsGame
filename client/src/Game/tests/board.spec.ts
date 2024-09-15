@@ -1,4 +1,4 @@
-import { JEWEL_SPELL_CONVERSION } from "../config";
+import { JEWEL_SPELL_CONVERSION, P1_BOARD } from "../config";
 import { Board } from "../board";
 import { test, expect, describe, beforeEach } from "vitest";
 
@@ -32,24 +32,28 @@ function advanceStateBy(secs: number, board: Board) {
   }
 }
 
+function resetAllJewels(board: Board) {
+  board.jewels.forEach((j) => j.reset());
+}
+
 describe("Board", () => {
   let board: Board;
   beforeEach(() => {
     board = new Board({
-      position: { x: 0, y: 0 },
-      size: { width: 0, height: 0 },
+      position: P1_BOARD.position,
+      size: P1_BOARD.size,
       cols: 8,
       rows: 8,
       player: "p1",
       health: 100,
     });
     board.generateJewels([...layout]);
+    resetAllJewels(board);
   });
   test("swapping elements at edge", () => {
-    advanceStateBy(5, board);
     const isSwapped = board?.attemptSwap(13, 5);
     board.generateJewels([...layout]);
-    advanceStateBy(5, board);
+    resetAllJewels(board);
 
     const isSwappedInverted = board.attemptSwap(5, 13);
 
@@ -57,10 +61,9 @@ describe("Board", () => {
     expect(isSwappedInverted).toBe(true);
   });
   test("swapping elements at edge (vertical)", () => {
-    advanceStateBy(5, board);
     const isSwapped = board.attemptSwap(42, 50);
     board.generateJewels([...layout]);
-    advanceStateBy(5, board);
+    resetAllJewels(board);
 
     const isSwappedInverted = board.attemptSwap(50, 42);
 
@@ -69,12 +72,9 @@ describe("Board", () => {
   });
 
   test("swapping elements at edge (vertical)", () => {
-    advanceStateBy(5, board);
-
     const isSwapped = board.attemptSwap(12, 4);
     board.generateJewels([...layout]);
-
-    advanceStateBy(5, board);
+    resetAllJewels(board);
 
     const isSwappedInverted = board.attemptSwap(4, 12);
 
@@ -82,12 +82,9 @@ describe("Board", () => {
     expect(isSwappedInverted).toBe(true);
   });
   test("swapping elements at edge (horizontal)", () => {
-    advanceStateBy(5, board);
-
     const isSwapped = board.attemptSwap(16, 17);
-
     board.generateJewels([...layout]);
-    advanceStateBy(5, board);
+    resetAllJewels(board);
 
     const isSwappedInverted = board.attemptSwap(17, 16);
 
@@ -95,12 +92,9 @@ describe("Board", () => {
     expect(isSwappedInverted).toBe(true);
   });
   test("swapping illegal selections (diagonal)", () => {
-    advanceStateBy(5, board);
-
     const isSwapped = board.attemptSwap(54, 45);
-
     board.generateJewels([...layout]);
-    advanceStateBy(5, board);
+    resetAllJewels(board);
 
     const isSwappedInverted = board.attemptSwap(45, 54);
 
@@ -108,18 +102,15 @@ describe("Board", () => {
     expect(isSwappedInverted).toBe(false);
   });
   test("swapping illegal selections (out of bound)", () => {
-    advanceStateBy(5, board);
     const isSwapped = board.attemptSwap(65, 4);
     board.generateJewels([...layout]);
-    advanceStateBy(5, board);
+    resetAllJewels(board);
     const isSwappedInverted = board.attemptSwap(65, 4);
 
     expect(isSwapped).toBe(false);
     expect(isSwappedInverted).toBe(false);
   });
   test("swapping illegal selections (not neighbors)", () => {
-    advanceStateBy(5, board);
-
     const isSwapped = board.attemptSwap(42, 44);
     const isSwappedInverted = board.attemptSwap(44, 42);
     const isSwappedVertical = board.attemptSwap(14, 54);
@@ -158,21 +149,19 @@ describe("Board", () => {
     expect(swap2).toBe(false);
   });
   test("after swap at the bottom, second swap on the same column but higher should be illegal", () => {
-    // now we are in removing state
     const swap1 = board.attemptSwap(54, 46);
     board.removeOrMergeMatches();
+    // now we are in removing state
     const swap2 = board.attemptSwap(38, 37);
     expect(swap1).toBe(true);
     expect(swap2).toBe(false);
   });
   test("merge vertical", () => {
-    advanceStateBy(10, board);
     const initialJewelType = board.jewels[17].jewelType;
     board.swapJewels(16, 17);
     board.removeOrMergeMatches();
 
     const indices = [0, 16, 24];
-    console.log(board.jewels[8].isConverting);
 
     expect(board.jewels[8].isConverting).toBe(true);
     expect(
@@ -192,6 +181,7 @@ describe("Board", () => {
     ).toBe(initialJewelType);
   });
   test("remove after swap", () => {
+    resetAllJewels(board);
     board.swapJewels(54, 46);
     board.removeOrMergeMatches();
 

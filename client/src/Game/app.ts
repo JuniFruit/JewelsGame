@@ -65,7 +65,7 @@ function gameLoop(timeStamp: number) {
   while (secondsPassed > 0.0) {
     const dt = Math.min(secondsPassed, dt_bound);
     if (debugInstance?.isSlowTime) {
-      game.update(timePassed, dt * 0.5);
+      game.update(timePassed, dt * 0.3);
     } else {
       game.update(timePassed, dt);
     }

@@ -145,8 +145,10 @@ export class Jewel extends InteractableEntity {
     }
   }
 
-  private reset() {
+  reset() {
     super.resetMouseStates();
+    this.removeTimer.reset();
+    this.convertTimer.reset();
     this.isMerging = false;
     this.isPhysicalized = false;
     this.isMoving = false;
@@ -184,7 +186,7 @@ export class Jewel extends InteractableEntity {
   }
 
   isMatchable() {
-    if (this.isMerging || this.isRemoving) {
+    if (this.isMerging || this.isRemoving || this.isFalling) {
       return false;
     }
     return true;
@@ -430,8 +432,6 @@ export class Jewel extends InteractableEntity {
   }
 
   private updateFalling(_t: number, dt: number) {
-    if (this.index === 63) {
-    }
     this.fallingAnimTime -= dt;
     this.fallingVec.y += GRAVITY_VEC.y;
     this.position.y += this.fallingVec.y * dt;
@@ -443,14 +443,14 @@ export class Jewel extends InteractableEntity {
 
   private updateConverting(t: number, dt: number) {
     this.convertTimer.update(t, dt);
-    if (!this.convertTimer.isEnded) {
+    if (this.convertTimer.isEnded) {
       this.stopConverting();
     }
   }
 
   private updateRemoving(t: number, dt: number) {
     this.removeTimer.update(t, dt);
-    if (!this.removeTimer.isEnded) {
+    if (this.removeTimer.isEnded) {
       this.stopRemoving();
     }
   }
@@ -487,7 +487,7 @@ export class Jewel extends InteractableEntity {
   }
 
   draw(ctx: CanvasRenderingContext2D) {
-    if (this.isDisabled) return;
+    if (this.isDisabled || this.isRemoving) return;
     if (this.jewelSprite) {
       this.jewelSprite.draw(ctx);
     } else {
@@ -503,15 +503,6 @@ export class Jewel extends InteractableEntity {
     if (this.isHovered && !this.isSelected) {
       ctx.lineWidth = 5;
       ctx.strokeStyle = "white";
-      ctx.strokeRect(
-        this.position.x,
-        this.position.y,
-        this.size.width,
-        this.size.height,
-      );
-    }
-    if (this.isSelected) {
-      ctx.strokeStyle = "black";
       ctx.strokeRect(
         this.position.x,
         this.position.y,
@@ -786,7 +777,17 @@ export class Board extends BaseEntity {
       { ...jewel.position },
       "jewelAttack_" + jewel.jewelParentType,
     );
-    attackAnim.moveTo(this.opponentBoard!.getBoardCenter());
+    if (!this.opponentBoard) return;
+    const opponentSide =
+      this.position.x - this.opponentBoard!.position.x < 0 ? 0 : 1;
+    const oponentCenter = this.opponentBoard!.getBoardCenter();
+    const target = {
+      y: oponentCenter.y,
+      x:
+        this.opponentBoard!.position.x +
+        this.opponentBoard!.size.width * opponentSide,
+    };
+    attackAnim.moveTo(target);
     this.animations.push(attackAnim);
   }
 
@@ -1187,7 +1188,7 @@ export class Board extends BaseEntity {
       const jewel = this.jewels[i];
       jewel.update(t, dt);
 
-      if (jewel.isDisabled) {
+      if (jewel.isDisabled || jewel.jewelType === 0) {
         disabledExist = true;
       }
     }

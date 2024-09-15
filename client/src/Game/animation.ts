@@ -415,18 +415,21 @@ const jewelAttackBaseConfig: ImageConfigBase = {
   framesHold: 10,
   frameStartCol: 12,
   frameStopCol: 15,
-  frameStartRow: 11,
-  frameStopRow: 11,
+  frameStartRow: 16,
+  frameStopRow: 16,
   size: { width: 50, height: 50 },
   scale: 1,
 };
 
 const jewelRemoveBaseConfig: ImageConfigBase = {
-  framesHold: 10,
-  frameStartCol: 17,
-  frameStopCol: 20,
-  frameStartRow: 12,
-  frameStopRow: 12,
+  // framesHold: 10,
+  // frameStartCol: 17,
+  // frameStopCol: 20,
+  // frameStartRow: 12,
+  // frameStopRow: 12,
+  // isLooped: false,
+  // scale: 2.5,
+  framesHold: 7,
   isLooped: false,
   scale: 2.5,
 };
@@ -470,7 +473,7 @@ export const imageConfigs: Record<string, ImageConfig> = {
   },
   [`jewelRemove_${JEWEL_TYPE.RED}`]: {
     ...jewelRemoveBaseConfig,
-    imageName: "redEffectSheet",
+    imageName: "expl_big",
   },
   [`jewelRemove_${JEWEL_TYPE.BROWN}`]: {
     framesHold: 10,
@@ -480,19 +483,19 @@ export const imageConfigs: Record<string, ImageConfig> = {
   },
   [`jewelRemove_${JEWEL_TYPE.BLUE}`]: {
     ...jewelRemoveBaseConfig,
-    imageName: "blueEffectSheet",
+    imageName: "expl_big",
   },
   [`jewelRemove_${JEWEL_TYPE.GREEN}`]: {
     ...jewelRemoveBaseConfig,
-    imageName: "greenEffectSheet",
+    imageName: "expl_big",
   },
   [`jewelRemove_${JEWEL_TYPE.PURPLE}`]: {
     ...jewelRemoveBaseConfig,
-    imageName: "purpleEffectSheet",
+    imageName: "expl_big",
   },
   [`jewelRemove_${JEWEL_TYPE.ORANGE}`]: {
     ...jewelRemoveBaseConfig,
-    imageName: "yellowEffectSheet",
+    imageName: "expl_big",
   },
 
   [`jewelAttack_${JEWEL_TYPE.RED}`]: {

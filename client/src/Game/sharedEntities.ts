@@ -22,6 +22,7 @@ export class BaseEntity {
   size: Size;
   initialPos: Coords;
   initialSize: Size;
+  clickedPosition: Coords = { x: 0, y: 0 };
 
   constructor({ type, position, size }: BaseEntityProps) {
     this.type = type;
@@ -60,9 +61,14 @@ export class InteractableEntity extends BaseEntity {
 
   mouseDown(_mousePos: Coords) {
     this.isClicking = true;
+    this.clickedPosition = {
+      x: Math.max(_mousePos.x - this.position.x, 0),
+      y: Math.max(_mousePos.y - this.position.y, 0),
+    };
   }
   mouseUp(_mousePos: Coords) {
     this.isClicking = false;
+    this.clickedPosition = { x: 0, y: 0 };
   }
   mouseOut(_mousePos: Coords) {}
 }

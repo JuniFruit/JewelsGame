@@ -200,8 +200,8 @@ export class Jewel extends InteractableEntity {
   }
 
   dragTo(pos: Coords) {
-    let newPosX = pos.x - this.size.width * 0.5;
-    let newPosY = pos.y - this.size.height * 0.5;
+    let newPosX = pos.x - this.clickedPosition.x;
+    let newPosY = pos.y - this.clickedPosition.y;
     let x = 0;
     let y = 0;
 

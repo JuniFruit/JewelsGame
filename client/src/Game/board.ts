@@ -52,6 +52,7 @@ export class Jewel extends InteractableEntity {
   fallingAnimTime: number = 0;
   // sprites
   jewelSprite: Sprite | undefined;
+  hoveredSprite: Sprite | undefined;
   removeTimer: Timer;
   convertTimer: Timer;
   effect: Animation | undefined;
@@ -162,7 +163,9 @@ export class Jewel extends InteractableEntity {
 
   private setJewelSprite() {
     this.jewelSprite = createSprite(this.position, this.jewelType, this.size);
-    this.jewelSprite?.play();
+    // this.hoveredSprite = createSprite(this.position, "jewelHover", this.size);
+    this.jewelSprite.play();
+    // this.hoveredSprite.play();
   }
 
   checkDraggingCollision(otherJewel: Jewel) {
@@ -377,7 +380,10 @@ export class Jewel extends InteractableEntity {
 
   checkIsHovered(mousePos: Coords): boolean {
     if (!this.isSelectable()) return false;
-    return super.checkIsHovered(mousePos);
+    const isHovered = super.checkIsHovered(mousePos);
+    if (isHovered) {
+    }
+    return isHovered;
   }
 
   convertTo(targetType: number) {
@@ -463,6 +469,17 @@ export class Jewel extends InteractableEntity {
       this.stopMoving();
     }
   }
+  private updateAnimations(t: number, dt: number) {
+    if (this.jewelSprite) {
+      this.jewelSprite.update(t, dt);
+      this.jewelSprite.position = this.position;
+    }
+    if (this.isHovered && this.hoveredSprite) {
+      this.hoveredSprite.update(t, dt);
+      this.hoveredSprite.position = this.position;
+    }
+  }
+
   update(t: number, dt: number) {
     if (this.isDisabled) return;
     if (this.isRemoving) {
@@ -480,14 +497,15 @@ export class Jewel extends InteractableEntity {
     if (this.effect) {
       this.effect.update(t, dt);
     }
-    if (this.jewelSprite) {
-      this.jewelSprite.update(t, dt);
-      this.jewelSprite.position = this.position;
-    }
+    this.updateAnimations(t, dt);
   }
 
   draw(ctx: CanvasRenderingContext2D) {
     if (this.isDisabled || this.isRemoving) return;
+
+    if (this.isHovered && !this.isSelected) {
+      this.hoveredSprite?.draw(ctx);
+    }
     if (this.jewelSprite) {
       this.jewelSprite.draw(ctx);
     } else {
@@ -500,7 +518,7 @@ export class Jewel extends InteractableEntity {
       );
     }
 
-    if (this.isHovered && !this.isSelected) {
+    if (this.isHovered && !this.isSelected && !this.hoveredSprite) {
       ctx.lineWidth = 5;
       ctx.strokeStyle = "white";
       ctx.strokeRect(
@@ -934,7 +952,7 @@ export class Board extends BaseEntity {
       const el1 = this.jewels[startInd];
       const el2 = this.jewels[elementInd];
 
-      if (el2.isMerging || el2.isSwapping) break;
+      if (el2.isMerging || el2.isSwapping) return;
 
       if (el1.jewelType === 0 && el2.jewelType !== 0) {
         // swap elements

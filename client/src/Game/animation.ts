@@ -522,10 +522,15 @@ export const imageConfigs: Record<string, ImageConfig> = {
     ...jewelAttackBaseConfig,
     imageName: "yellowEffectSheet",
   },
+  jewelHover: {
+    framesHold: 10,
+    imageName: "light",
+    scale: 2.5,
+  },
 
   jewelConvert: {
     framesHold: 5,
-    imageName: "fire_enchant",
+    imageName: "plague",
     scale: 3,
     isLooped: false,
   },

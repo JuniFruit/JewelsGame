@@ -11,8 +11,14 @@ import {
   Coords,
   InteractableEntity,
   Size,
+  Timer,
 } from "./sharedEntities";
-import { createAnimation, createSprite, Sprite, Animation } from "./images";
+import {
+  createAnimationWithSprite,
+  createSprite,
+  Sprite,
+  Animation,
+} from "./animation";
 import { HealthBar } from "./UI";
 import {
   convertTo2dInd,
@@ -44,8 +50,8 @@ export class Jewel extends InteractableEntity {
   fallingAnimTime: number = 0;
   // sprites
   jewelSprite: Sprite | undefined;
-  removeAnimation: Animation;
-  convertAnimation: Animation;
+  removeTimer: Timer;
+  convertTimer: Timer;
   effect: Animation | undefined;
   // Diminished size for deeper collision detection
   draggingDetectionSize: Size;
@@ -60,8 +66,8 @@ export class Jewel extends InteractableEntity {
   draggingVelFactor = 40;
   fallingTimeSim = 2; // in seconds
   bounce = -0.2;
-  removeAnimationTime = 0.2;
-  convertAnimationTime = 0.4;
+  removeDuration = 0.2;
+  convertDuration = 0.4;
   // states
   isSpell = false;
   isMoving = false;
@@ -99,23 +105,13 @@ export class Jewel extends InteractableEntity {
       width: size.width * sizeFactor,
       height: size.height * sizeFactor,
     };
-    this.removeAnimation = createAnimation(
-      this.position,
-      this.size,
-      "",
-      this.removeAnimationTime,
-    );
-    this.convertAnimation = createAnimation(
-      this.position,
-      this.size,
-      "",
-      this.convertAnimationTime,
-    );
+    this.removeTimer = new Timer({ time: this.removeDuration });
+    this.convertTimer = new Timer({ time: this.convertDuration });
     this.setJewelSprite();
   }
 
   setEffect(effectKey: string, animationTime = 0) {
-    this.effect = createAnimation(
+    this.effect = createAnimationWithSprite(
       this.position,
       this.size,
       effectKey,
@@ -379,14 +375,14 @@ export class Jewel extends InteractableEntity {
     this.isRemoving = false;
     this.isSpell = true;
     this.isConverting = true;
-    this.convertAnimation.play();
+    this.convertTimer.start();
     this.targetJewelType = targetType;
   }
 
   remove() {
     if (this.isMerging) return;
     this.isRemoving = true;
-    this.removeAnimation?.play();
+    this.removeTimer.start();
   }
 
   private stopMoving() {
@@ -436,18 +432,16 @@ export class Jewel extends InteractableEntity {
     }
   }
 
-  private updateConverting(_t: number, dt: number) {
-    this.convertAnimation.update(_t, dt);
-    this.convertAnimation.position = this.position;
-    if (!this.convertAnimation.isAnimating) {
+  private updateConverting(t: number, dt: number) {
+    this.convertTimer.update(t, dt);
+    if (!this.convertTimer.isEnded) {
       this.stopConverting();
     }
   }
 
-  private updateRemoving(_t: number, dt: number) {
-    this.removeAnimation.position = this.position;
-    this.removeAnimation.update(_t, dt);
-    if (!this.removeAnimation.isAnimating) {
+  private updateRemoving(t: number, dt: number) {
+    this.removeTimer.update(t, dt);
+    if (!this.removeTimer.isEnded) {
       this.stopRemoving();
     }
   }
@@ -515,12 +509,6 @@ export class Jewel extends InteractableEntity {
         this.size.width,
         this.size.height,
       );
-    }
-    if (this.isConverting) {
-      this.convertAnimation.draw(ctx);
-    }
-    if (this.isRemoving) {
-      this.removeAnimation.draw(ctx);
     }
     if (this.effect) {
       this.effect.draw(ctx);
@@ -769,7 +757,7 @@ export class Board extends BaseEntity {
       const currInd = indices[i];
       const jewel = this.jewels[currInd];
       jewel.remove();
-      const removalAnim = createAnimation(
+      const removalAnim = createAnimationWithSprite(
         jewel.position,
         jewel.size,
         "jewelRemove",
@@ -805,7 +793,7 @@ export class Board extends BaseEntity {
       if (i === mergeInd) {
         const jewel = this.jewels[currInd];
         jewel.convertTo(mergeTo);
-        const convertAnim = createAnimation(
+        const convertAnim = createAnimationWithSprite(
           jewel.position,
           jewel.size,
           "jewelConvert",

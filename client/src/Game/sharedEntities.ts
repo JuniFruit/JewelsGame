@@ -66,3 +66,46 @@ export class InteractableEntity extends BaseEntity {
   }
   mouseOut(_mousePos: Coords) {}
 }
+
+export type TimerProps = {
+  time: number;
+};
+
+export class Timer {
+  time: number;
+  timeLeft: number;
+  isGoing = false;
+  isEnded = false;
+  constructor({ time }: TimerProps) {
+    this.time = time;
+    this.timeLeft = time;
+  }
+
+  reset() {
+    this.isGoing = false;
+    this.isEnded = false;
+    this.timeLeft = this.time;
+  }
+
+  start() {
+    this.reset();
+    this.isGoing = true;
+  }
+
+  stop() {
+    this.isEnded = true;
+    this.isGoing = false;
+  }
+
+  setTime(val: number) {
+    this.time = val;
+  }
+
+  update(_t: number, dt: number) {
+    if (!this.isGoing) return;
+    this.timeLeft -= dt;
+    if (this.timeLeft <= 0) {
+      this.stop();
+    }
+  }
+}

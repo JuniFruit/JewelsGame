@@ -1,6 +1,12 @@
 import { ImageKey, images } from "./assets/imageAssets/imageAssets";
 import { JEWEL_SPELL_TYPE, JEWEL_TYPE } from "./config";
-import { BaseEntity, BaseEntityProps, Coords, Size } from "./sharedEntities";
+import {
+  BaseEntity,
+  BaseEntityProps,
+  Coords,
+  Size,
+  Timer,
+} from "./sharedEntities";
 import { Vector } from "./utils";
 
 export type ImageConfig = {
@@ -193,26 +199,26 @@ export class Sprite extends BaseEntity {
   }
 }
 
-export type AnimationProps = SpriteProps & {
+export type AnimationProps = Omit<BaseEntityProps, "type"> & {
   animationTime?: number;
+  sprite?: Sprite;
 };
 
-export class Animation extends Sprite {
-  animationTime;
-  private initialAnimationTime;
+export class Animation extends BaseEntity {
+  timer: Timer;
+  sprite: Sprite | undefined;
   targetPosition: Coords;
   private movingVec: Vector = new Vector({ x: 0, y: 0 });
   private movingVelFactor = 10;
   isMoving = false;
   isAnimating = false;
   private noAnimTime = false;
-  constructor({ animationTime = 0, ...rest }: AnimationProps) {
-    super(rest);
-    this.type = "animation";
-    this.animationTime = animationTime;
-    this.initialAnimationTime = animationTime;
+  constructor({ animationTime = 0, sprite, ...rest }: AnimationProps) {
+    super({ type: "animation", ...rest });
+    this.timer = new Timer({ time: animationTime });
     this.targetPosition = { ...rest.position };
     this.noAnimTime = !animationTime;
+    this.sprite = sprite;
   }
 
   // private isReachedTarget(vel: number) {
@@ -223,13 +229,13 @@ export class Animation extends Sprite {
   // }
 
   reset() {
-    super.reset();
+    this.sprite?.reset();
+    // this.timer.reset();
     this.isMoving = false;
     this.isAnimating = false;
-    this.animationTime = this.initialAnimationTime;
   }
 
-  moveTo(pos: Coords) {
+  moveTo(pos: Coords, velFactor?: number) {
     this.targetPosition = { ...pos };
 
     const dx = pos.x - this.position.x;
@@ -241,17 +247,19 @@ export class Animation extends Sprite {
       return;
     }
 
-    const length = distance * 0.5 * this.movingVelFactor;
-    this.animationTime = distance / length;
+    const length = distance * 0.5 * (velFactor || this.movingVelFactor);
+    this.timer.setTime(distance / length);
     this.movingVec.setLength(length);
     this.movingVec.setAngle(angle);
     this.isAnimating = true;
     this.isMoving = true;
+    this.timer.start();
   }
 
   play() {
     this.reset();
-    super.play();
+    this.sprite?.play();
+    this.timer.start();
     this.isAnimating = true;
   }
 
@@ -264,31 +272,34 @@ export class Animation extends Sprite {
     // }
   }
 
-  private updateAnimating(dt: number) {
-    if (this.noAnimTime) {
-      if (!this.isPlaying) {
+  private updateAnimating(t: number, dt: number) {
+    // no time was specified rely on sprite frames
+    // otherwise we rely on timer
+    this.sprite?.update(t, dt);
+
+    if (this.noAnimTime && this.sprite) {
+      if (!this.sprite.isPlaying) {
         this.reset();
       }
     } else {
-      this.animationTime -= dt;
-      if (this.animationTime <= 0) {
+      this.timer.update(t, dt);
+      if (this.timer.isEnded) {
         this.reset();
       }
     }
   }
 
-  update(_t: number, dt: number) {
+  update(t: number, dt: number) {
     if (!this.isAnimating) return;
-    super.update(_t, dt);
     if (this.isMoving) {
       this.updateMoving(dt);
     }
-    this.updateAnimating(dt);
+    this.updateAnimating(t, dt);
   }
 
   draw(ctx: CanvasRenderingContext2D) {
     if (!this.isAnimating) return;
-    super.draw(ctx);
+    this.sprite?.draw(ctx);
   }
 }
 
@@ -363,31 +374,37 @@ const imageBaseConfigs: Record<ImageKey, ImageConfigBase> = {
     framesMaxWidth: 16,
   },
   gemLightGreenSpell: {
-    ...gemBaseConfig,
+    framesHold: 20,
     framesMaxWidth: 16,
   },
   gemLiliacSpell: {
-    ...gemBaseConfig,
+    framesHold: 20,
+
     framesMaxWidth: 16,
   },
   gemTurquoiseSpell: {
-    ...gemBaseConfig,
+    framesHold: 20,
+
     framesMaxWidth: 16,
   },
   gemGoldSpell: {
-    ...gemBaseConfig,
+    framesHold: 20,
+
     framesMaxWidth: 16,
   },
   gemRedSpell: {
-    ...gemBaseConfig,
+    framesHold: 20,
+
     framesMaxWidth: 16,
   },
   gemBlueSpell: {
-    ...gemBaseConfig,
+    framesHold: 20,
+
     framesMaxWidth: 16,
   },
   gemPurpleSpell: {
-    ...gemBaseConfig,
+    framesHold: 20,
+
     framesMaxWidth: 16,
   },
 };
@@ -445,18 +462,19 @@ export const imageConfigs: Record<string, ImageConfig> = {
 
 const htmlImages: Record<string, HTMLImageElement> = {};
 
-export function createAnimation(
+export function createAnimationWithSprite(
   position: Coords,
   size: Size,
-  key: string,
+  spriteKey: string,
   animationTime = 0,
 ) {
-  const config = getImageAndConfig(key);
+  const config = getImageAndConfig(spriteKey);
+  const sprite = createSprite(position, size, spriteKey);
   const animation = new Animation({
     animationTime: animationTime || config.animationTime,
+    sprite,
     position,
     size,
-    ...config,
   });
   return animation;
 }

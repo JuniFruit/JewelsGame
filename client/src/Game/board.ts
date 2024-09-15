@@ -23,6 +23,7 @@ import { HealthBar } from "./UI";
 import {
   convertTo2dInd,
   detectCollision,
+  getCenter,
   getPositionByInd,
   GRAVITY_VEC,
   Vector,
@@ -39,6 +40,7 @@ export type JewelProps = Omit<BaseEntityProps, "type"> & {
 
 export class Jewel extends InteractableEntity {
   jewelType: number;
+  jewelParentType: number = 0;
   index = -1;
   targetJewelType: number = 0; // temp var for conversion animation
   boardRows = 0;
@@ -108,6 +110,12 @@ export class Jewel extends InteractableEntity {
     this.removeTimer = new Timer({ time: this.removeDuration });
     this.convertTimer = new Timer({ time: this.convertDuration });
     this.setJewelSprite();
+    this.setJewelParentType();
+  }
+
+  private setJewelParentType() {
+    this.jewelParentType =
+      JEWEL_SPELL_CONVERSION[this.jewelType]?.parentType || this.jewelType;
   }
 
   setEffect(effectKey: string, animationTime = 0) {
@@ -418,6 +426,7 @@ export class Jewel extends InteractableEntity {
     this.isConverting = false;
     this.jewelType = this.targetJewelType;
     this.setJewelSprite();
+    this.setJewelParentType();
   }
 
   private updateFalling(_t: number, dt: number) {
@@ -756,16 +765,33 @@ export class Board extends BaseEntity {
     for (let i = 0; i < indices.length; i++) {
       const currInd = indices[i];
       const jewel = this.jewels[currInd];
-      jewel.remove();
-      const removalAnim = createAnimationWithSprite(
-        jewel.position,
-        "jewelRemove",
-        jewel.size,
-      );
-      removalAnim.play();
-
-      this.animations.push(removalAnim);
+      this.removeJewel(jewel);
+      this.jewelAttack(jewel);
     }
+  }
+
+  private removeJewel(jewel: Jewel) {
+    jewel.remove();
+    const removalAnim = createAnimationWithSprite(
+      jewel.position,
+      "jewelRemove_" + jewel.jewelParentType,
+      jewel.size,
+    );
+    removalAnim.play();
+    this.animations.push(removalAnim);
+  }
+
+  private jewelAttack(jewel: Jewel) {
+    const attackAnim = createAnimationWithSprite(
+      { ...jewel.position },
+      "jewelAttack_" + jewel.jewelParentType,
+    );
+    attackAnim.moveTo(this.opponentBoard!.getBoardCenter());
+    this.animations.push(attackAnim);
+  }
+
+  getBoardCenter() {
+    return getCenter(this.position, this.size);
   }
 
   private findConversion(type: number, matches: number) {
@@ -804,6 +830,7 @@ export class Board extends BaseEntity {
         this.jewels[currInd].mergeTo(
           this.jewels[indices[mergeInd]].getIndexPos(),
         );
+        this.jewelAttack(this.jewels[currInd]);
       }
     }
   }
@@ -1178,7 +1205,7 @@ export class Board extends BaseEntity {
     }
   }
 
-  private drawAnimations(ctx: CanvasRenderingContext2D) {
+  drawAnimations(ctx: CanvasRenderingContext2D) {
     for (let anim of this.animations) {
       anim.draw(ctx);
     }
@@ -1210,6 +1237,5 @@ export class Board extends BaseEntity {
     if (draggingEnt) {
       draggingEnt.draw(ctx);
     }
-    this.drawAnimations(ctx);
   }
 }

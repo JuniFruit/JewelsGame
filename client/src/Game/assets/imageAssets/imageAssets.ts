@@ -25,6 +25,11 @@ import gemRedSpell from "./GEMS/RED_SPELL.png";
 import gemPurpleSpell from "./GEMS/PURPLE_SPELL.png";
 import gemTurquoiseSpell from "./GEMS/TURQUOISE_SPELL.png";
 import gemLiliacSpell from "./GEMS/LILIAC_SPELL.png";
+import blueEffectSheet from "./Blue Effect Bullet Impact Explosion 32x32.png";
+import greenEffectSheet from "./Green Effect Bullet Impact Explosion 32x32.png";
+import purpleEffectSheet from "./Purple Effect Bullet Impact Explosion 32x32.png";
+import redEffectSheet from "./Red Effect Bullet Impact Explosion 32x32.png";
+import yellowEffectSheet from "./Yellow Effect Bullet Impact Explosion 32x32.png";
 
 export const images = {
   assetSheet_1,
@@ -54,6 +59,11 @@ export const images = {
   gemLiliacSpell,
   gemLightGreenSpell,
   gemDarkBlueSpell,
+  blueEffectSheet,
+  greenEffectSheet,
+  purpleEffectSheet,
+  redEffectSheet,
+  yellowEffectSheet,
 };
 
 export type ImageKey = keyof typeof images;

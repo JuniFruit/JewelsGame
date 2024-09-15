@@ -95,5 +95,7 @@ export class Game {
   draw() {
     this.p1Board.draw(this.ctx);
     this.p2Board.draw(this.ctx);
+    this.p1Board.drawAnimations(this.ctx);
+    this.p2Board.drawAnimations(this.ctx);
   }
 }

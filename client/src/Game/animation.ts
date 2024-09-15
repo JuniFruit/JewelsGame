@@ -37,6 +37,7 @@ export type SpriteProps = Omit<BaseEntityProps, "type"> & {
   frameStopCol?: number;
   frameStopRow?: number;
   scale?: number;
+  angle?: number; // in radians
   framesTotal?: number;
   isLooped?: boolean;
 };
@@ -50,6 +51,7 @@ export class Sprite extends BaseEntity {
   framesCurrentHeight = 0; // current fram row
   frameStartCol = 0;
   frameStartRow = 0;
+  angle: number;
   frameStopCol;
   frameStopRow;
   framesElapsed = 0;
@@ -74,6 +76,7 @@ export class Sprite extends BaseEntity {
     framesMaxHeight = 1,
     frameStartCol = 1,
     frameStartRow = 1,
+    angle = 0,
     framesTotal,
     frameStopCol,
     frameStopRow,
@@ -81,6 +84,7 @@ export class Sprite extends BaseEntity {
     isLooped = true,
   }: SpriteProps) {
     super({ position, size, type: "sprite" });
+    this.angle = angle;
     this.framesHold = framesHold;
     this.framesMaxHeight = framesMaxHeight;
     this.framesMaxWidth = framesMaxWidth;
@@ -125,10 +129,17 @@ export class Sprite extends BaseEntity {
   }
 
   reset() {
-    this.framesCurrentWidth = 0;
-    this.framesCurrentHeight = 0;
+    this.framesCurrentWidth = this.frameStartCol;
+    this.framesCurrentHeight = this.frameStartRow;
     this.framesElapsed = 0;
     this.isPlaying = false;
+  }
+
+  /**
+   * set sprite angle in rads
+   */
+  setAngle(val: number) {
+    this.angle = val;
   }
 
   play() {
@@ -175,6 +186,11 @@ export class Sprite extends BaseEntity {
 
   draw(ctx: CanvasRenderingContext2D) {
     if (!this.image || !this.image.complete) return;
+    const prevMatrix = ctx.getTransform();
+    ctx.translate(this.position.x, this.position.y);
+
+    ctx.rotate(this.angle);
+    ctx.translate(-this.position.x, -this.position.y);
 
     ctx.drawImage(
       this.image,
@@ -187,6 +203,7 @@ export class Sprite extends BaseEntity {
       this.resized.width,
       this.resized.height,
     );
+    ctx.setTransform(prevMatrix);
   }
 }
 
@@ -200,7 +217,7 @@ export class Animation extends BaseEntity {
   sprite: Sprite | undefined;
   targetPosition: Coords;
   private movingVec: Vector = new Vector({ x: 0, y: 0 });
-  private movingVelFactor = 10;
+  private movingVelFactor = 800;
   isMoving = false;
   isAnimating = false;
   private noAnimTime = false;
@@ -212,13 +229,6 @@ export class Animation extends BaseEntity {
     this.sprite = sprite;
   }
 
-  // private isReachedTarget(vel: number) {
-  //   const dx = Math.abs(this.position.x - this.targetPosition.x);
-  //   const dy = Math.abs(this.position.y - this.targetPosition.y);
-  //   const speed = Math.abs(vel);
-  //   return dx < speed && dy < speed;
-  // }
-
   reset() {
     this.sprite?.reset();
     // this.timer.reset();
@@ -226,25 +236,30 @@ export class Animation extends BaseEntity {
     this.isAnimating = false;
   }
 
+  private setAngle(dx: number, dy: number) {
+    const angle = Math.atan2(dy, dx);
+    this.sprite?.setAngle(angle);
+    this.movingVec.setAngle(angle);
+  }
+
   moveTo(pos: Coords, velFactor?: number) {
     this.targetPosition = { ...pos };
 
     const dx = pos.x - this.position.x;
     const dy = pos.y - this.position.y;
-    const angle = Math.atan2(dy, dx);
     const distance = Math.sqrt(dx * dx + dy * dy);
 
     if (!distance) {
       return;
     }
 
-    const length = distance * 0.5 * (velFactor || this.movingVelFactor);
+    const length = velFactor || this.movingVelFactor;
     this.timer.setTime(distance / length);
     this.movingVec.setLength(length);
-    this.movingVec.setAngle(angle);
-    this.isAnimating = true;
+    this.setAngle(dx, dy);
+    this.play();
     this.isMoving = true;
-    this.timer.start();
+    this.noAnimTime = false;
   }
 
   play() {
@@ -304,6 +319,11 @@ const gemBaseConfig: ImageConfigBase = {
   frameStopRow: 1,
 };
 
+const gemSpellBaseConfig: ImageConfigBase = {
+  framesHold: 10,
+  framesMaxWidth: 16,
+};
+
 const imageBaseConfigs: Record<ImageKey, ImageConfigBase> = {
   potionsSheet: {
     framesMaxWidth: 5,
@@ -360,44 +380,55 @@ const imageBaseConfigs: Record<ImageKey, ImageConfigBase> = {
   gemRed: gemBaseConfig,
   gemBlue: gemBaseConfig,
   gemPurple: gemBaseConfig,
-  gemDarkBlueSpell: {
-    ...gemBaseConfig,
-    framesMaxWidth: 16,
+  gemDarkBlueSpell: gemSpellBaseConfig,
+  gemLightGreenSpell: gemSpellBaseConfig,
+  gemLiliacSpell: gemSpellBaseConfig,
+  gemTurquoiseSpell: gemSpellBaseConfig,
+  gemGoldSpell: gemSpellBaseConfig,
+  gemRedSpell: gemSpellBaseConfig,
+  gemBlueSpell: gemSpellBaseConfig,
+  gemPurpleSpell: gemSpellBaseConfig,
+  blueEffectSheet: {
+    framesMaxWidth: 20,
+    framesMaxHeight: 16,
   },
-  gemLightGreenSpell: {
-    framesHold: 20,
-    framesMaxWidth: 16,
+  greenEffectSheet: {
+    framesMaxWidth: 20,
+    framesMaxHeight: 16,
   },
-  gemLiliacSpell: {
-    framesHold: 20,
+  redEffectSheet: {
+    framesMaxWidth: 20,
+    framesMaxHeight: 16,
+  },
+  yellowEffectSheet: {
+    framesMaxWidth: 20,
+    framesMaxHeight: 16,
+  },
+  purpleEffectSheet: {
+    framesMaxWidth: 20,
+    framesMaxHeight: 16,
+  },
+};
 
-    framesMaxWidth: 16,
-  },
-  gemTurquoiseSpell: {
-    framesHold: 20,
+// Temp base configs. TODO: rethink config idea
+const jewelAttackBaseConfig: ImageConfigBase = {
+  framesHold: 10,
+  frameStartCol: 12,
+  frameStopCol: 15,
+  frameStartRow: 11,
+  frameStopRow: 11,
+  size: { width: 50, height: 50 },
+  scale: 1,
+};
 
-    framesMaxWidth: 16,
-  },
-  gemGoldSpell: {
-    framesHold: 20,
-
-    framesMaxWidth: 16,
-  },
-  gemRedSpell: {
-    framesHold: 20,
-
-    framesMaxWidth: 16,
-  },
-  gemBlueSpell: {
-    framesHold: 20,
-
-    framesMaxWidth: 16,
-  },
-  gemPurpleSpell: {
-    framesHold: 20,
-
-    framesMaxWidth: 16,
-  },
+const jewelRemoveBaseConfig: ImageConfigBase = {
+  framesHold: 10,
+  frameStartCol: 17,
+  frameStopCol: 20,
+  frameStartRow: 12,
+  frameStopRow: 12,
+  isLooped: false,
+  scale: 2.5,
 };
 
 export const imageConfigs: Record<string, ImageConfig> = {
@@ -437,22 +468,63 @@ export const imageConfigs: Record<string, ImageConfig> = {
   [JEWEL_SPELL_TYPE.EXPLOSION]: {
     imageName: "gemDarkBlueSpell",
   },
-  jewelRemove: {
-    framesHold: 7,
+  [`jewelRemove_${JEWEL_TYPE.RED}`]: {
+    ...jewelRemoveBaseConfig,
+    imageName: "redEffectSheet",
+  },
+  [`jewelRemove_${JEWEL_TYPE.BROWN}`]: {
+    framesHold: 10,
+    isLooped: false,
     imageName: "expl_big",
     scale: 2.5,
-    isLooped: false,
   },
+  [`jewelRemove_${JEWEL_TYPE.BLUE}`]: {
+    ...jewelRemoveBaseConfig,
+    imageName: "blueEffectSheet",
+  },
+  [`jewelRemove_${JEWEL_TYPE.GREEN}`]: {
+    ...jewelRemoveBaseConfig,
+    imageName: "greenEffectSheet",
+  },
+  [`jewelRemove_${JEWEL_TYPE.PURPLE}`]: {
+    ...jewelRemoveBaseConfig,
+    imageName: "purpleEffectSheet",
+  },
+  [`jewelRemove_${JEWEL_TYPE.ORANGE}`]: {
+    ...jewelRemoveBaseConfig,
+    imageName: "yellowEffectSheet",
+  },
+
+  [`jewelAttack_${JEWEL_TYPE.RED}`]: {
+    ...jewelAttackBaseConfig,
+    imageName: "redEffectSheet",
+  },
+  [`jewelAttack_${JEWEL_TYPE.BROWN}`]: {
+    ...jewelAttackBaseConfig,
+    imageName: "purpleEffectSheet",
+  },
+  [`jewelAttack_${JEWEL_TYPE.BLUE}`]: {
+    ...jewelAttackBaseConfig,
+    imageName: "blueEffectSheet",
+  },
+  [`jewelAttack_${JEWEL_TYPE.GREEN}`]: {
+    ...jewelAttackBaseConfig,
+    imageName: "greenEffectSheet",
+  },
+  [`jewelAttack_${JEWEL_TYPE.PURPLE}`]: {
+    ...jewelAttackBaseConfig,
+    imageName: "purpleEffectSheet",
+  },
+  [`jewelAttack_${JEWEL_TYPE.ORANGE}`]: {
+    ...jewelAttackBaseConfig,
+    imageName: "yellowEffectSheet",
+  },
+
   jewelConvert: {
     framesHold: 5,
     imageName: "fire_enchant",
     scale: 3,
     isLooped: false,
-  },
-  jewelAfterRemove: {
-    framesHold: 5,
-    imageName: "fireLoop",
-    scale: 2,
   },
 };
 

@@ -16,6 +16,18 @@ export function convertTo2dInd(ind: number, rows: number, cols: number) {
   };
 }
 
+export function radToDegrees(val: number) {
+  console.log(val * (180 / Math.PI));
+  return val * (180 / Math.PI);
+}
+
+export function getCenter(pos: Coords, size: Size): Coords {
+  return {
+    x: pos.x + size.width * 0.5,
+    y: pos.y + size.height * 0.5,
+  };
+}
+
 export function getPositionByInd(
   ind: number,
   rows: number,

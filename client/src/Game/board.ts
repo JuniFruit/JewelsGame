@@ -113,8 +113,8 @@ export class Jewel extends InteractableEntity {
   setEffect(effectKey: string, animationTime = 0) {
     this.effect = createAnimationWithSprite(
       this.position,
-      this.size,
       effectKey,
+      this.size,
       animationTime,
     );
     this.effect.play();
@@ -151,7 +151,7 @@ export class Jewel extends InteractableEntity {
   }
 
   private setJewelSprite() {
-    this.jewelSprite = createSprite(this.position, this.size, this.jewelType);
+    this.jewelSprite = createSprite(this.position, this.jewelType, this.size);
     this.jewelSprite?.play();
   }
 
@@ -759,8 +759,8 @@ export class Board extends BaseEntity {
       jewel.remove();
       const removalAnim = createAnimationWithSprite(
         jewel.position,
-        jewel.size,
         "jewelRemove",
+        jewel.size,
       );
       removalAnim.play();
 
@@ -795,8 +795,8 @@ export class Board extends BaseEntity {
         jewel.convertTo(mergeTo);
         const convertAnim = createAnimationWithSprite(
           jewel.position,
-          jewel.size,
           "jewelConvert",
+          jewel.size,
         );
         this.animations.push(convertAnim);
         convertAnim.play();

@@ -22,19 +22,10 @@ export type ImageConfig = {
   isLooped?: boolean;
   imageName: ImageKey;
   animationTime?: number;
+  size?: Size;
 };
 
-export type ImageConfigBase = Pick<
-  ImageConfig,
-  | "framesMaxWidth"
-  | "framesMaxHeight"
-  | "scale"
-  | "framesHold"
-  | "frameStopRow"
-  | "frameStartRow"
-  | "frameStartCol"
-  | "frameStopCol"
->;
+export type ImageConfigBase = Omit<ImageConfig, "imageName">;
 
 export type SpriteProps = Omit<BaseEntityProps, "type"> & {
   image?: HTMLImageElement;
@@ -458,36 +449,41 @@ export const imageConfigs: Record<string, ImageConfig> = {
     scale: 3,
     isLooped: false,
   },
+  jewelAfterRemove: {
+    framesHold: 5,
+    imageName: "fireLoop",
+    scale: 2,
+  },
 };
 
 const htmlImages: Record<string, HTMLImageElement> = {};
 
 export function createAnimationWithSprite(
   position: Coords,
-  size: Size,
   spriteKey: string,
+  size?: Size,
   animationTime = 0,
 ) {
   const config = getImageAndConfig(spriteKey);
-  const sprite = createSprite(position, size, spriteKey);
+  const sprite = createSprite(position, spriteKey, size);
   const animation = new Animation({
     animationTime: animationTime || config.animationTime,
     sprite,
     position,
-    size,
+    size: config.size || size || { width: 0, height: 0 },
   });
   return animation;
 }
 
 export function createSprite(
   position: Coords,
-  size: Size,
   key: string | number,
+  size?: Size,
 ) {
   const config = getImageAndConfig(key);
   const sprite = new Sprite({
     position,
-    size,
+    size: config.size || size || { width: 0, height: 0 },
     ...config,
   });
   return sprite;

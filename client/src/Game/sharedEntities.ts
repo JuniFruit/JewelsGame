@@ -23,11 +23,13 @@ export class BaseEntity {
   initialPos: Coords;
   initialSize: Size;
   clickedPosition: Coords = { x: 0, y: 0 };
+  targetPosition: Coords;
 
   constructor({ type, position, size }: BaseEntityProps) {
     this.type = type;
     this.size = size;
     this.position = position;
+    this.targetPosition = { ...position };
     this.initialPos = { ...position };
     this.initialSize = { ...size };
   }

@@ -61,7 +61,6 @@ export class Jewel extends InteractableEntity {
   opacity: number = 1; // for debbuggin, most likely to be removed
   // vecs
   fallingVec: Vector;
-  targetPosition: Coords;
   movingVec: Vector = new Vector({ x: 0, y: 0 });
   // constants
   dragRescaleFactor = 1.2;

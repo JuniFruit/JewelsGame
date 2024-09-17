@@ -215,16 +215,15 @@ export type AnimationProps = Omit<BaseEntityProps, "type"> & {
 export class Animation extends BaseEntity {
   timer: Timer;
   sprite: Sprite | undefined;
-  targetPosition: Coords;
   private movingVec: Vector = new Vector({ x: 0, y: 0 });
   private movingVelFactor = 800;
   isMoving = false;
   isAnimating = false;
+
   private noAnimTime = false;
   constructor({ animationTime = 0, sprite, ...rest }: AnimationProps) {
     super({ type: "animation", ...rest });
     this.timer = new Timer({ time: animationTime });
-    this.targetPosition = { ...rest.position };
     this.noAnimTime = !animationTime;
     this.sprite = sprite;
   }

@@ -374,6 +374,9 @@ export class UI {
   }
 
   draw() {
+    if (this.currentScreen === "game") {
+      this.game?.draw();
+    }
     for (let i = 0; i < this.currentElements.length; i++) {
       this.currentElements[i].draw(this.ctx);
     }

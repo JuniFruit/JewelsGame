@@ -17,6 +17,11 @@ export function initGameScreens(
       background: "",
       elements: [...(debugInstance ? debugButtons(ctx, debugInstance!) : [])],
     },
+    {
+      screenName: "main_menu",
+      background: "",
+      elements: [...mainMenuButtons(ctx, ui)],
+    },
   ];
 
   screens.forEach((s) => {
@@ -24,9 +29,38 @@ export function initGameScreens(
   });
 }
 
+function mainMenuButtons(ctx: CanvasRenderingContext2D, ui: UI) {
+  console.log(ctx.canvas.getBoundingClientRect().x);
+  return [
+    new Button({
+      position: {
+        x: 0 + ctx.canvas.getBoundingClientRect().width / 2,
+        y: 200,
+      },
+      ctx,
+      ...DEFAULT_BUTTON_THEME,
+      text: "Start game",
+      padding: 10,
+      fontSize: "20px",
+      onClick: () => ui.setCurrentScreen("game"),
+    }),
+    new Button({
+      position: {
+        x: ctx.canvas.width * 0.5,
+        y: 70,
+      },
+      ctx,
+      ...DEFAULT_BUTTON_THEME,
+      text: "Settings",
+      padding: 10,
+      fontSize: "10px",
+    }),
+  ];
+}
+
 function debugButtons(ctx: CanvasRenderingContext2D, debugInstance: Debug) {
   const canvas = ctx.canvas;
-  const elements = [
+  return [
     new Button({
       position: {
         x: 450,

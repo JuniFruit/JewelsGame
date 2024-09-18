@@ -34,7 +34,7 @@ export async function init(canvas: HTMLCanvasElement) {
 
   const cleanInputs = initInputs(canvas, game, ui, debugInstance);
   initGameScreens(ui, game, context, debugInstance);
-  ui.setCurrentScreen("game");
+  ui.setCurrentScreen("main_menu");
 
   // start gameLoop
   window.requestAnimationFrame(gameLoop);
@@ -81,7 +81,6 @@ function gameLoop(timeStamp: number) {
 function draw() {
   ui.drawFont();
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-  game.draw();
   ui.draw();
   if (debugInstance) {
     debugInstance.showDebug();

@@ -136,6 +136,9 @@ export class Jewel extends InteractableEntity {
 
   setDragging(val: boolean) {
     this.isDragging = val;
+    if (val) {
+      this.position = this.getIndexPos();
+    }
     if (val && this.jewelSprite) {
       this.jewelSprite.rescale(
         this.jewelSprite.initialScale * this.dragRescaleFactor,
@@ -558,7 +561,6 @@ export class Board extends BaseEntity {
   private currentSwapping: Jewel | undefined;
   private animations: Animation[] = [];
   // states
-  shouldRevert = false;
   isFalling = false;
   isCastingSpell = false;
   isReadyToRefill = false;
@@ -854,7 +856,6 @@ export class Board extends BaseEntity {
   }
 
   attemptSwap(ind1: number, ind2: number) {
-    this.shouldRevert = false;
     if (ind1 === ind2) return false;
     if (!this.jewels[ind1] || !this.jewels[ind2]) return false;
 
@@ -885,7 +886,7 @@ export class Board extends BaseEntity {
     );
 
     if (!this.isMatchesLegal(matches1) && !this.isMatchesLegal(matches2)) {
-      this.shouldRevert = true;
+      this.swapJewels(ind1, ind2);
       return false;
     }
     this.currentSwapping = this.jewels[ind2];
@@ -1026,13 +1027,7 @@ export class Board extends BaseEntity {
         this.selectedInd,
         this.currentDraggingInd,
       );
-      if (!isSuccess) {
-        if (this.shouldRevert) {
-          this.swapJewels(this.selectedInd, this.currentDraggingInd);
-        }
-      } else {
-        this.selectedInd = -1;
-      }
+      if (isSuccess) this.selectedInd = -1;
       this.resetDragging();
 
       return;

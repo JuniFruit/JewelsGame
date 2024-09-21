@@ -370,6 +370,7 @@ export class Jewel extends InteractableEntity {
   setFalling(targetPos: Coords, isPhysicalized = false) {
     this.setDragging(false);
     this.isFalling = true;
+    this.isSwapping = false;
     if (!isPhysicalized) {
       this.moveTo(targetPos);
     } else {
@@ -473,6 +474,10 @@ export class Jewel extends InteractableEntity {
   }
   private updateAnimations(t: number, dt: number) {
     if (this.jewelSprite) {
+      if (this.index === 63) {
+        console.log(this.jewelSprite.framesElapsed);
+        console.log(this.jewelSprite.framesPerSec);
+      }
       this.jewelSprite.update(t, dt);
       this.jewelSprite.position = this.position;
     }
@@ -889,6 +894,7 @@ export class Board extends BaseEntity {
       this.swapJewels(ind1, ind2);
       return false;
     }
+
     this.currentSwapping = this.jewels[ind2];
 
     return true;
@@ -952,7 +958,7 @@ export class Board extends BaseEntity {
       const el1 = this.jewels[startInd];
       const el2 = this.jewels[elementInd];
 
-      if (el2.isMerging || el2.isSwapping) return;
+      if (el2.isMerging) return;
 
       if (el1.jewelType === 0 && el2.jewelType !== 0) {
         // swap elements
@@ -1047,10 +1053,11 @@ export class Board extends BaseEntity {
       return;
     }
 
+    this.hoveredInd = -1;
+
     if (!detectCollision(this.position, this.size, mousePos, MOUSE_SIZE)) {
       return;
     }
-    this.hoveredInd = -1;
     for (let i = 0; i < this.jewels.length; i++) {
       const curr = this.jewels[i];
       if (curr.checkIsHovered(mousePos)) {
@@ -1122,7 +1129,7 @@ export class Board extends BaseEntity {
     const jewel = new Jewel({
       size: { ...this.jewelSize },
       position: jewelPos,
-      jewelType: type,
+      jewelType: type || 0,
       boardPos: this.position,
       boardSize: this.size,
       boardCols: this.cols,

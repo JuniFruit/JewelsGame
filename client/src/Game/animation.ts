@@ -10,7 +10,7 @@ import {
 import { Vector } from "./utils";
 
 export type ImageConfig = {
-  framesHold?: number;
+  framesPerSec?: number;
   framesMaxWidth?: number;
   framesMaxHeight?: number;
   frameStartCol?: number;
@@ -18,6 +18,7 @@ export type ImageConfig = {
   frameStopCol?: number;
   frameStopRow?: number;
   scale?: number;
+
   framesTotal?: number;
   isLooped?: boolean;
   imageName: ImageKey;
@@ -29,7 +30,6 @@ export type ImageConfigBase = Omit<ImageConfig, "imageName">;
 
 export type SpriteProps = Omit<BaseEntityProps, "type"> & {
   image?: HTMLImageElement;
-  framesHold?: number;
   framesMaxWidth?: number;
   framesMaxHeight?: number;
   frameStartCol?: number;
@@ -37,13 +37,15 @@ export type SpriteProps = Omit<BaseEntityProps, "type"> & {
   frameStopCol?: number;
   frameStopRow?: number;
   scale?: number;
+  framesPerSec?: number;
   angle?: number; // in radians
   framesTotal?: number;
   isLooped?: boolean;
 };
 
 export class Sprite extends BaseEntity {
-  framesHold: number; // skip frames
+  framesPerSec: number;
+  prevFrame: number = 0;
   private adjustmentVec: Coords = { x: 0, y: 0 }; // rescale adjustments
   framesMaxWidth; // total frame cols
   framesMaxHeight; // total frame rows
@@ -71,11 +73,11 @@ export class Sprite extends BaseEntity {
     position,
     size,
     image = { width: 0, height: 0 } as HTMLImageElement,
-    framesHold = 5,
     framesMaxWidth = 1,
     framesMaxHeight = 1,
     frameStartCol = 1,
     frameStartRow = 1,
+    framesPerSec = 60,
     angle = 0,
     framesTotal,
     frameStopCol,
@@ -85,9 +87,9 @@ export class Sprite extends BaseEntity {
   }: SpriteProps) {
     super({ position, size, type: "sprite" });
     this.angle = angle;
-    this.framesHold = framesHold;
     this.framesMaxHeight = framesMaxHeight;
     this.framesMaxWidth = framesMaxWidth;
+    this.framesPerSec = framesPerSec;
     this.image = image;
     this.framesTotal =
       framesTotal || this.framesMaxWidth * this.framesMaxHeight;
@@ -149,7 +151,7 @@ export class Sprite extends BaseEntity {
   }
 
   private animateFrames(_dt: number) {
-    this.framesElapsed++;
+    this.framesElapsed = this.framesElapsed + this.framesPerSec * _dt;
 
     if (
       this.framesTotalElapsed >= this.framesTotal - 1 ||
@@ -164,13 +166,17 @@ export class Sprite extends BaseEntity {
       }
     }
 
-    if (this.framesElapsed % this.framesHold === 0) {
-      this.framesTotalElapsed = this.framesTotalElapsed + 1;
+    const framesElapsedInt = this.framesElapsed | 0;
+    const frameDiff = Math.trunc(framesElapsedInt - this.prevFrame);
+
+    if (frameDiff >= 1) {
+      this.framesTotalElapsed = this.framesTotalElapsed + frameDiff;
+      this.prevFrame = framesElapsedInt;
       if (this.framesCurrentWidth < this.frameStopCol) {
-        this.framesCurrentWidth++;
+        this.framesCurrentWidth += frameDiff;
       } else if (this.framesCurrentHeight < this.frameStopRow) {
         this.framesCurrentWidth = this.frameStartCol;
-        this.framesCurrentHeight++;
+        this.framesCurrentHeight += frameDiff;
       } else {
         this.framesCurrentHeight = this.frameStartRow;
         this.framesCurrentWidth = this.frameStartCol;
@@ -309,7 +315,6 @@ export class Animation extends BaseEntity {
 }
 
 const gemBaseConfig: ImageConfigBase = {
-  framesHold: 20,
   framesMaxWidth: 11,
   framesMaxHeight: 1,
   frameStartCol: 1,
@@ -319,7 +324,7 @@ const gemBaseConfig: ImageConfigBase = {
 };
 
 const gemSpellBaseConfig: ImageConfigBase = {
-  framesHold: 10,
+  framesPerSec: 10,
   framesMaxWidth: 16,
 };
 
@@ -335,27 +340,27 @@ const imageBaseConfigs: Record<ImageKey, ImageConfigBase> = {
     framesMaxHeight: 4,
   },
   lightning: {
-    framesHold: 3,
+    framesPerSec: 10,
     framesMaxWidth: 16,
     framesMaxHeight: 1,
   },
   shield: {
-    framesHold: 7,
+    framesPerSec: 7,
     framesMaxWidth: 5,
     framesMaxHeight: 1,
   },
   light_2: {
-    framesHold: 3,
+    framesPerSec: 10,
     framesMaxWidth: 8,
     framesMaxHeight: 2,
   },
   expl_big: {
-    framesHold: 3,
+    framesPerSec: 10,
     framesMaxWidth: 8,
     framesMaxHeight: 4,
   },
   light: {
-    framesHold: 3,
+    framesPerSec: 10,
     framesMaxWidth: 8,
     framesMaxHeight: 2,
   },
@@ -411,7 +416,7 @@ const imageBaseConfigs: Record<ImageKey, ImageConfigBase> = {
 
 // Temp base configs. TODO: rethink config idea
 const jewelAttackBaseConfig: ImageConfigBase = {
-  framesHold: 10,
+  framesPerSec: 10,
   frameStartCol: 12,
   frameStopCol: 15,
   frameStartRow: 16,
@@ -428,7 +433,7 @@ const jewelRemoveBaseConfig: ImageConfigBase = {
   // frameStopRow: 12,
   // isLooped: false,
   // scale: 2.5,
-  framesHold: 7,
+  framesPerSec: 20,
   isLooped: false,
   scale: 2.5,
 };
@@ -475,7 +480,7 @@ export const imageConfigs: Record<string, ImageConfig> = {
     imageName: "expl_big",
   },
   [`jewelRemove_${JEWEL_TYPE.BROWN}`]: {
-    framesHold: 10,
+    framesPerSec: 20,
     isLooped: false,
     imageName: "expl_big",
     scale: 2.5,
@@ -522,13 +527,13 @@ export const imageConfigs: Record<string, ImageConfig> = {
     imageName: "yellowEffectSheet",
   },
   jewelHover: {
-    framesHold: 10,
+    framesPerSec: 10,
     imageName: "light",
     scale: 2.5,
   },
 
   jewelConvert: {
-    framesHold: 5,
+    framesPerSec: 15,
     imageName: "plague",
     scale: 3,
     isLooped: false,

@@ -213,9 +213,12 @@ export class Sprite extends BaseEntity {
   }
 }
 
+export type AnimationType = "";
+
 export type AnimationProps = Omit<BaseEntityProps, "type"> & {
   animationTime?: number;
   sprite?: Sprite;
+  animationType?: AnimationType;
 };
 
 export class Animation extends BaseEntity {

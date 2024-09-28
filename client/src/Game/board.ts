@@ -392,6 +392,7 @@ export class Jewel extends InteractableEntity {
   convertTo(targetType: number) {
     this.resetMouseStates();
     this.isRemoving = false;
+    this.isMerging = false;
     this.isSpell = true;
     this.isConverting = true;
     this.convertTimer.start();
@@ -399,7 +400,7 @@ export class Jewel extends InteractableEntity {
   }
 
   remove() {
-    if (this.isMerging) return;
+    if (this.isMerging || this.isConverting) return;
     this.isRemoving = true;
     this.removeTimer.start();
   }
@@ -474,10 +475,6 @@ export class Jewel extends InteractableEntity {
   }
   private updateAnimations(t: number, dt: number) {
     if (this.jewelSprite) {
-      if (this.index === 63) {
-        console.log(this.jewelSprite.framesElapsed);
-        console.log(this.jewelSprite.framesPerSec);
-      }
       this.jewelSprite.update(t, dt);
       this.jewelSprite.position = this.position;
     }
@@ -640,98 +637,103 @@ export class Board extends BaseEntity {
     return converted1 === converted2;
   }
 
-  /**
-   * Move into all 4 directions simultaneously, get all matches by the plane
-   * startInd - index from where we start checking process
-   * advanceForward - limit check to only 2 directions up and left
-   */
-  private getMatchesFromPos(
-    type: number,
-    startInd: number,
-    advanceForward = false,
-  ): Matches {
-    // init all 4 runners, make them next step on start
-    let vertUp: number | null = startInd - this.cols;
-    let vertDown: number | null = startInd + this.cols;
-    let horLeft: number | null = startInd - 1;
-    let horRight: number | null = startInd + 1;
-    if (advanceForward) {
-      horRight = null;
-      vertDown = null;
-    }
-    const { row: startRow } = convertTo2dInd(startInd, this.rows, this.cols);
-    const horMatches: number[] = [];
-    const vertMatches: number[] = [];
-    horMatches.unshift(startInd);
-    vertMatches.unshift(startInd);
+  private getMatches(startInd: number) {
+    const type = this.jewels[startInd].jewelType;
+    const byRow: Record<number, Set<number>> = {};
+    const byCol: Record<number, Set<number>> = {};
+    const queue: number[] = [startInd];
+    const seen: Record<number, boolean> = {};
+    const { row: startRow, col: startCol } = convertTo2dInd(
+      startInd,
+      this.rows,
+      this.cols,
+    );
+    byRow[startRow] = new Set([startInd]);
+    byCol[startCol] = new Set([startInd]);
 
-    while (
-      vertUp !== null ||
-      vertDown !== null ||
-      horLeft !== null ||
-      horRight !== null
+    while (queue.length) {
+      const curr = queue.pop();
+      if (!curr) continue;
+      for (let neighborInd of this.getNeighorIndices(curr)) {
+        const jewel = this.jewels[neighborInd];
+        if (
+          this.compareTypes(jewel.jewelType, type) &&
+          jewel.isMatchable() &&
+          !seen[neighborInd]
+        ) {
+          const { row, col } = convertTo2dInd(
+            neighborInd,
+            this.rows,
+            this.cols,
+          );
+          if (byRow[row]) {
+            byRow[row].add(neighborInd);
+          } else {
+            byRow[row] = new Set([neighborInd]);
+          }
+          if (byCol[col]) {
+            byCol[col].add(neighborInd);
+          } else {
+            byCol[col] = new Set([neighborInd]);
+          }
+
+          queue.push(neighborInd);
+        }
+        seen[curr] = true;
+      }
+    }
+    const matches: number[] = [];
+    Object.values(byRow).forEach((set) => {
+      matches.push(...this.convertSetToMatchedIndices(set, 1));
+    });
+    Object.values(byCol).forEach((set) => {
+      matches.push(...this.convertSetToMatchedIndices(set, this.cols));
+    });
+    if (matches.length) {
+      console.log([...new Set(matches)]);
+      console.log(byCol);
+      console.log(byRow);
+    }
+
+    return [...new Set(matches)];
+  }
+
+  convertSetToMatchedIndices(set: Set<number>, step: number) {
+    if (set.size < 3) return [];
+    const vals = [...set].sort((a, b) => a - b);
+    let prev = vals[0];
+    for (let i = 1; i < vals.length; i++) {
+      const diff = Math.abs(vals[i] - prev);
+      prev = vals[i];
+      if (diff !== step) return [];
+    }
+    return vals;
+  }
+
+  private getNeighorIndices(ind: number) {
+    const indices = [];
+    const { row } = convertTo2dInd(ind, this.rows, this.cols);
+
+    if (
+      this.jewels[ind + 1] &&
+      convertTo2dInd(ind + 1, this.rows, this.cols).row === row
     ) {
-      if (vertUp !== null && vertUp > -1 && vertUp < this.jewels.length) {
-        const jewel = this.jewels[vertUp];
-        if (this.compareTypes(jewel.jewelType, type) && jewel.isMatchable()) {
-          vertMatches.push(vertUp);
-          vertUp = vertUp - this.cols;
-        } else {
-          vertUp = null;
-        }
-      } else {
-        vertUp = null;
-      }
-      if (vertDown !== null && vertDown > -1 && vertDown < this.jewels.length) {
-        const jewel = this.jewels[vertDown];
-        if (this.compareTypes(jewel.jewelType, type) && jewel.isMatchable()) {
-          vertMatches.unshift(vertDown);
-          vertDown = vertDown + this.cols;
-        } else {
-          vertDown = null;
-        }
-      } else {
-        vertDown = null;
-      }
-
-      if (horLeft !== null && horLeft > -1 && horLeft < this.jewels.length) {
-        const { row } = convertTo2dInd(horLeft, this.rows, this.cols);
-        const jewel = this.jewels[horLeft];
-        if (
-          this.compareTypes(jewel.jewelType, type) &&
-          row === startRow &&
-          jewel.isMatchable()
-        ) {
-          horMatches.unshift(horLeft);
-          horLeft = horLeft - 1;
-        } else {
-          horLeft = null;
-        }
-      } else {
-        horLeft = null;
-      }
-      if (horRight !== null && horRight > -1 && horRight < this.jewels.length) {
-        const { row } = convertTo2dInd(horRight, this.rows, this.cols);
-        const jewel = this.jewels[horRight];
-        if (
-          this.compareTypes(jewel.jewelType, type) &&
-          row === startRow &&
-          jewel.isMatchable()
-        ) {
-          horMatches.push(horRight);
-          horRight = horRight + 1;
-        } else {
-          horRight = null;
-        }
-      } else {
-        horRight = null;
-      }
+      indices.push(ind + 1);
+    }
+    if (
+      this.jewels[ind - 1] &&
+      convertTo2dInd(ind - 1, this.rows, this.cols).row === row
+    ) {
+      indices.push(ind - 1);
+    }
+    if (this.jewels[ind - this.cols]) {
+      indices.push(ind - this.cols);
+    }
+    if (this.jewels[ind + this.cols]) {
+      indices.push(ind + this.cols);
     }
 
-    return {
-      horMatches,
-      vertMatches,
-    };
+    return indices;
   }
 
   private resetSwappingIndices() {
@@ -749,27 +751,15 @@ export class Board extends BaseEntity {
   }
 
   removeOrMerge(matches: Matches) {
-    const { horMatches, vertMatches } = matches;
     if (!this.isMatchesLegal(matches)) {
       return;
     }
-    // console.log(vertMatches, horMatches);
-    // if (vertMatches.length === 3 && horMatches.length === 3) {
-    //   this.mergeLine([...vertMatches, ...horMatches], vertMatches[0]);
-    //   return;
-    // }
 
-    if (vertMatches.length === 3) {
-      this.removeLine(vertMatches);
+    if (matches.length === 3) {
+      this.removeLine(matches);
     }
-    if (horMatches.length === 3) {
-      this.removeLine(horMatches);
-    }
-    if (vertMatches.length > 3) {
-      this.mergeLine(vertMatches);
-    }
-    if (horMatches.length > 3) {
-      this.mergeLine(horMatches);
+    if (matches.length > 3) {
+      this.mergeLine(matches);
     }
   }
 
@@ -829,8 +819,10 @@ export class Board extends BaseEntity {
   }
 
   mergeLine(indices: number[], mergeIndex = -1) {
-    indices.sort((a, b) => a - b);
+    console.log([...indices]);
 
+    indices.sort((a, b) => a - b);
+    console.log(indices);
     const mergeInd =
       mergeIndex > -1 ? mergeIndex : Math.floor(indices.length >> 1) - 1;
     const type = this.jewels[indices[mergeInd]].jewelType;
@@ -883,11 +875,11 @@ export class Board extends BaseEntity {
     if (ind1Col === ind2Col && rowDelta > 1) return false;
     if (ind1Row === ind2Row && colDelta > 1) return false;
     this.swapJewels(ind1, ind2);
-    const matches1 = this.filterCollapsingMatches(
-      this.getMatchesFromPos(this.jewels[ind1].jewelType, ind1),
+    const matches1 = this.getMatches(ind1).filter(
+      (ind) => !this.isCollapsingUnder(ind),
     );
-    const matches2 = this.filterCollapsingMatches(
-      this.getMatchesFromPos(this.jewels[ind2].jewelType, ind2),
+    const matches2 = this.getMatches(ind2).filter(
+      (ind) => !this.isCollapsingUnder(ind),
     );
 
     if (!this.isMatchesLegal(matches1) && !this.isMatchesLegal(matches2)) {
@@ -895,31 +887,9 @@ export class Board extends BaseEntity {
       return false;
     }
 
-    this.currentSwapping = this.jewels[ind2];
+    this.currentSwapping = this.jewels[ind1];
 
     return true;
-  }
-
-  private filterCollapsingMatches(matches: Matches): Matches {
-    let vertMatches = matches.vertMatches;
-    let horMatches = matches.horMatches;
-    if (vertMatches.length >= 3) {
-      if (this.isCollapsingUnder(vertMatches[0])) {
-        vertMatches = [];
-      }
-    }
-    if (horMatches.length >= 3) {
-      for (let i = 0; i < horMatches.length; i++) {
-        if (this.isCollapsingUnder(horMatches[i])) {
-          horMatches = [];
-          break;
-        }
-      }
-    }
-    return {
-      vertMatches,
-      horMatches,
-    };
   }
 
   // check if current jewel is on the column that is collapsing underneath
@@ -936,17 +906,15 @@ export class Board extends BaseEntity {
   }
 
   private isMatchesLegal(matches: Matches) {
-    if (matches.horMatches.length < 3 && matches.vertMatches.length < 3) {
-      return false;
-    }
-    return true;
+    return matches.length >= 3;
   }
 
   removeOrMergeMatches() {
     for (let i = this.jewels.length - 1; i >= 0; i--) {
-      const jewel = this.jewels[i];
-      const matches = this.getMatchesFromPos(jewel.jewelType, i);
-      this.removeOrMerge(matches);
+      if (this.jewels[i].isMatchable()) {
+        const matches = this.getMatches(i);
+        this.removeOrMerge(matches);
+      }
     }
   }
 
@@ -1097,20 +1065,6 @@ export class Board extends BaseEntity {
     }
   }
 
-  // private updateRemoving() {
-  //   for (let i = 0; i < this.indicesToRemove.length; i++) {
-  //     const pack = this.indicesToRemove[i].filter(
-  //       (ind) => !this.jewels[ind].isDisabled,
-  //     );
-  //     if (!pack.length) {
-  //       this.indicesToRemove[i] = [];
-  //       this.moveJewelsDown();
-  //     }
-  //   }
-  //   this.indicesToRemove = this.indicesToRemove.filter((item) => item.length);
-  //   console.log(this.indicesToRemove);
-  // }
-
   private createJewel(
     i: number,
     type: number,
@@ -1171,16 +1125,14 @@ export class Board extends BaseEntity {
       const jewel = this.jewels[this.indicesToFall[i]];
       if (jewel && !jewel.isFalling) {
         this.indicesToFall[i] = -1;
-        this.removeOrMerge(
-          this.getMatchesFromPos(jewel.jewelType, jewel.index),
-        );
       }
     }
 
     this.indicesToFall = this.indicesToFall.filter((item) => item !== -1);
+    console.log(this.indicesToFall);
     if (!this.indicesToFall.length) {
       this.isFalling = false;
-      // this.removeOrMergeMatches();
+      this.removeOrMergeMatches();
     }
   }
 

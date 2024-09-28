@@ -6,10 +6,7 @@ export type GameProps = {
   ctx: CanvasRenderingContext2D;
 };
 
-export type Matches = {
-  horMatches: number[]; // array of indices within the layout array
-  vertMatches: number[];
-};
+export type Matches = number[];
 
 export class Game {
   mode;
@@ -37,23 +34,12 @@ export class Game {
 
     for (let i = 0; i < board.jewels.length; i++) {
       if (board.jewels[i].isDisabled) {
-        let type =
-          board.player === "p1"
-            ? this.jewelBankP1.pop()
-            : this.jewelBankP2.pop();
-        if (!type) {
-          type = types[Math.floor(Math.random() * 6)];
-          if (board.player === "p1") {
-            this.jewelBankP2.unshift(type);
-          } else {
-            this.jewelBankP1.unshift(type);
-          }
-        }
-        layout[i] = type;
+        layout[i] = types[Math.floor(Math.random() * 6)];
       } else {
         layout[i] = -1;
       }
     }
+    console.log({ layout });
     board.generateJewels(layout);
   }
 

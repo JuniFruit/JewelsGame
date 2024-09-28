@@ -21,17 +21,6 @@ const layout = [
   3, 1, 4, 5, 1, 4, 6, 2, 4, 5, 4, 8,
 ];
 
-function advanceStateBy(secs: number, board: Board) {
-  const frameTime = 0.016;
-  let left = secs;
-  let t = 0;
-  while (left >= 0) {
-    board.update(t, frameTime);
-    left -= frameTime;
-    t += frameTime;
-  }
-}
-
 function resetAllJewels(board: Board) {
   board.jewels.forEach((j) => j.reset());
 }
@@ -188,6 +177,44 @@ describe("Board", () => {
     const indices = [44, 45, 46];
     indices.forEach((ind) => {
       expect(board.jewels[ind].isRemoving).toBe(true);
+    });
+  });
+});
+
+describe("Board - edge cases", () => {
+  /**
+ *
+ 0-7:   1,2,6,6,5,6,5,4,
+ 8-15:  1,3,4,5,6,5,4,10,
+ 16-23: 2,1,5,6,5,3,4,4,
+ 24-31: 1,1,3,4,5,4,4,4,
+ 32-39: 4,3,5,5,3,5,4,4,
+ 40-47: 5,1,3,5,4,4,3,2,
+ 48-55: 5,5,2,3,3,1,4,5,
+ 56-63: 1,4,6,2,4,5,4,8,
+ *
+ */
+  test("should merge matches", () => {
+    const localLayout = [
+      1, 2, 6, 6, 5, 6, 5, 4, 1, 3, 4, 5, 6, 5, 4, 10, 2, 1, 5, 6, 5, 3, 4, 4,
+      1, 1, 3, 4, 5, 4, 4, 4, 4, 3, 5, 5, 3, 5, 4, 4, 5, 1, 3, 5, 4, 4, 3, 2, 5,
+      5, 2, 3, 3, 1, 4, 5, 1, 4, 6, 2, 4, 5, 4, 8,
+    ];
+    const board = new Board({
+      position: P1_BOARD.position,
+      size: P1_BOARD.size,
+      cols: 8,
+      rows: 8,
+      player: "p1",
+      health: 100,
+    });
+    board.generateJewels([...localLayout]);
+    resetAllJewels(board);
+
+    board.removeOrMergeMatches();
+    const indices = [22, 23, 29, 30, 31, 39, 38];
+    indices.forEach((ind) => {
+      expect(board.jewels[ind].isRemoving || board.jewels[ind].isConverting);
     });
   });
 });

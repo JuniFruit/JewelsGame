@@ -118,6 +118,20 @@ export function detectCollision(
   return true;
 }
 
+export function getMovingProps(currPos: Coords, targetPos: Coords) {
+  const dx = targetPos.x - currPos.x;
+  const dy = targetPos.y - currPos.y;
+  const distance = Math.sqrt(dx * dx + dy * dy);
+  const angle = Math.atan2(dy, dx);
+
+  return { distance, angle };
+}
+
+export function pickRnd(min: number, max: number) {
+  // min and max included
+  return Math.floor(Math.random() * (max - min + 1) + min);
+}
+
 export class Debug {
   game: Game;
   fps = 0;

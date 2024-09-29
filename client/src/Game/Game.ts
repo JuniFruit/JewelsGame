@@ -39,7 +39,6 @@ export class Game {
         layout[i] = -1;
       }
     }
-    console.log({ layout });
     board.generateJewels(layout);
   }
 

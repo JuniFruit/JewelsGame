@@ -1,7 +1,7 @@
 import { setCanvasSize, setSmoothing } from "./canvas";
 import { DEBUG } from "./config";
 import { Game } from "./Game";
-import { initAllImages } from "./animation";
+import { initAllImages } from "./animation/config";
 import { initInputs } from "./inputs";
 import { initGameScreens } from "./screens";
 import { initFonts, UI } from "./UI";

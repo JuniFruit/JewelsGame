@@ -24,10 +24,13 @@ import {
   convertTo2dInd,
   detectCollision,
   getCenter,
+  getMovingProps,
   getPositionByInd,
   GRAVITY_VEC,
   Vector,
 } from "./utils";
+import { Spell } from "./spells/base";
+import { AttackProjectile } from "./spells/attackProjectile";
 
 export type JewelProps = Omit<BaseEntityProps, "type"> & {
   jewelType: number;
@@ -327,26 +330,22 @@ export class Jewel extends InteractableEntity {
     this.isSelected = false;
     this.targetPosition = { ...pos };
 
-    const dx = pos.x - this.position.x;
-    const dy = pos.y - this.position.y;
-    const angle = Math.atan2(dy, dx);
-    const distance = Math.sqrt(dx * dx + dy * dy);
+    let factor = this.movingVelFactor;
+    if (this.isSwapping) {
+      factor = 10;
+    }
+    if (this.isDragging) {
+      factor = this.draggingVelFactor;
+    }
 
+    const { distance, angle } = getMovingProps(this.position, pos);
     if (!distance) {
       if (this.isSwapping) {
         this.isSwapping = false;
+        return;
       }
-      return;
     }
-
-    let length = distance * 0.5 * this.movingVelFactor;
-    if (this.isSwapping) {
-      length = distance * 0.6 * 10;
-    }
-    if (this.isDragging) {
-      length = distance * 0.6 * this.draggingVelFactor;
-    }
-
+    const length = distance * 0.5 * factor;
     this.movingVec.setLength(length);
     this.movingVec.setAngle(angle);
     this.isMoving = true;
@@ -465,7 +464,7 @@ export class Jewel extends InteractableEntity {
     }
   }
 
-  private updateMoving(_t: number, dt: number) {
+  private move(_t: number, dt: number) {
     this.position.x += this.movingVec.x * dt;
     this.position.y += this.movingVec.y * dt;
 
@@ -493,7 +492,7 @@ export class Jewel extends InteractableEntity {
       this.updateConverting(t, dt);
     }
     if (this.isMoving || this.isDragging) {
-      this.updateMoving(t, dt);
+      this.move(t, dt);
     }
     if (this.isFalling && this.isPhysicalized) {
       this.updateFalling(t, dt);
@@ -553,13 +552,13 @@ export class Board extends BaseEntity {
   jewelSize: Size;
   health: number = 0;
   player: "p1" | "p2" = "p1";
+  opponentBoard: Board | undefined;
   private healthBar: HealthBar;
   private hoveredInd = -1;
   private selectedInd = -1;
   private currentDraggingInd = -1;
   private indicesToFall: number[] = [];
-  private spellsToCast: unknown[] = []; // queue for spells to cast
-  private opponentBoard: Board | undefined;
+  private spellsToCast: Spell[] = []; // queue for spells to cast
   private currentSwapping: Jewel | undefined;
   private animations: Animation[] = [];
   // states
@@ -689,11 +688,11 @@ export class Board extends BaseEntity {
     Object.values(byCol).forEach((set) => {
       matches.push(...this.convertSetToMatchedIndices(set, this.cols));
     });
-    if (matches.length) {
-      console.log([...new Set(matches)]);
-      console.log(byCol);
-      console.log(byRow);
-    }
+    // if (matches.length) {
+    //   console.log([...new Set(matches)]);
+    //   console.log(byCol);
+    //   console.log(byRow);
+    // }
 
     return [...new Set(matches)];
   }
@@ -765,14 +764,25 @@ export class Board extends BaseEntity {
 
   removeLine(indices: number[]) {
     indices.sort((a, b) => a - b);
-    this.opponentBoard?.applyDamage(indices.length);
 
     for (let i = 0; i < indices.length; i++) {
       const currInd = indices[i];
       const jewel = this.jewels[currInd];
       this.removeJewel(jewel);
-      this.jewelAttack(jewel);
+      this.castProjectile(jewel.jewelType, { ...jewel.position });
     }
+  }
+
+  private castProjectile(jewelType: number, originPos: Coords) {
+    const ent = new AttackProjectile({
+      damageOnHit: 1,
+      board: this,
+      jewelType: jewelType,
+      position: originPos,
+    });
+
+    ent.cast();
+    this.spellsToCast.push(ent);
   }
 
   private removeJewel(jewel: Jewel) {
@@ -784,25 +794,6 @@ export class Board extends BaseEntity {
     );
     removalAnim.play();
     this.animations.push(removalAnim);
-  }
-
-  private jewelAttack(jewel: Jewel) {
-    const attackAnim = createAnimationWithSprite(
-      { ...jewel.position },
-      "jewelAttack_" + jewel.jewelParentType,
-    );
-    if (!this.opponentBoard) return;
-    const opponentSide =
-      this.position.x - this.opponentBoard!.position.x < 0 ? 0 : 1;
-    const oponentCenter = this.opponentBoard!.getBoardCenter();
-    const target = {
-      y: oponentCenter.y,
-      x:
-        this.opponentBoard!.position.x +
-        this.opponentBoard!.size.width * opponentSide,
-    };
-    attackAnim.moveTo(target);
-    this.animations.push(attackAnim);
   }
 
   getBoardCenter() {
@@ -819,15 +810,11 @@ export class Board extends BaseEntity {
   }
 
   mergeLine(indices: number[], mergeIndex = -1) {
-    console.log([...indices]);
-
     indices.sort((a, b) => a - b);
-    console.log(indices);
     const mergeInd =
       mergeIndex > -1 ? mergeIndex : Math.floor(indices.length >> 1) - 1;
     const type = this.jewels[indices[mergeInd]].jewelType;
     const matches = indices.length;
-    this.opponentBoard?.applyDamage(matches);
 
     const mergeTo = this.findConversion(type, matches);
 
@@ -847,7 +834,9 @@ export class Board extends BaseEntity {
         this.jewels[currInd].mergeTo(
           this.jewels[indices[mergeInd]].getIndexPos(),
         );
-        this.jewelAttack(this.jewels[currInd]);
+        this.castProjectile(this.jewels[currInd].jewelType, {
+          ...this.jewels[currInd].position,
+        });
       }
     }
   }
@@ -1129,7 +1118,6 @@ export class Board extends BaseEntity {
     }
 
     this.indicesToFall = this.indicesToFall.filter((item) => item !== -1);
-    console.log(this.indicesToFall);
     if (!this.indicesToFall.length) {
       this.isFalling = false;
       this.removeOrMergeMatches();
@@ -1145,6 +1133,18 @@ export class Board extends BaseEntity {
     }
     if (endedAnimationExists) {
       this.animations = this.animations.filter((anim) => anim.isAnimating);
+    }
+  }
+
+  private updateSpells(t: number, dt: number) {
+    let endedSpellExists = false;
+    for (let i = 0; i < this.spellsToCast.length; i++) {
+      const spell = this.spellsToCast[i];
+      spell.update(t, dt);
+      endedSpellExists = spell.isFinished;
+    }
+    if (endedSpellExists) {
+      this.spellsToCast = this.spellsToCast.filter((spell) => spell.isCasting);
     }
   }
 
@@ -1164,6 +1164,7 @@ export class Board extends BaseEntity {
       }
     }
     this.updateAnimations(t, dt);
+    this.updateSpells(t, dt);
     this.checkCollision();
 
     this.healthBar.update(t, dt);
@@ -1180,6 +1181,9 @@ export class Board extends BaseEntity {
   drawAnimations(ctx: CanvasRenderingContext2D) {
     for (let anim of this.animations) {
       anim.draw(ctx);
+    }
+    for (let spell of this.spellsToCast) {
+      spell.draw(ctx);
     }
   }
 

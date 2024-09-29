@@ -22,16 +22,15 @@ export class BaseEntity {
   size: Size;
   initialPos: Coords;
   initialSize: Size;
-  clickedPosition: Coords = { x: 0, y: 0 };
   targetPosition: Coords;
 
   constructor({ type, position, size }: BaseEntityProps) {
     this.type = type;
     this.size = size;
     this.position = position;
-    this.targetPosition = { ...position };
     this.initialPos = { ...position };
     this.initialSize = { ...size };
+    this.targetPosition = { ...position };
   }
 
   draw(_ctx: CanvasRenderingContext2D) {}
@@ -40,6 +39,7 @@ export class BaseEntity {
 export class InteractableEntity extends BaseEntity {
   isHovered = false;
   isClicking = false;
+  clickedPosition: Coords = { x: 0, y: 0 };
 
   constructor({ type, position, size }: BaseEntityProps) {
     super({ type, position, size });

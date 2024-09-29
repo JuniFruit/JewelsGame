@@ -1,12 +1,13 @@
 import { createAnimationWithSprite } from "../animation";
+import { JEWEL_SPELL_TYPE } from "../config";
 import { Spell, SpellProps } from "./base";
 
-export type StunSpellProps = SpellProps & {};
+export type StunSpellProps = Omit<SpellProps, "size"> & {};
 
 export class StunSpell extends Spell {
   private movingFactor = 2;
   constructor({ ...rest }: StunSpellProps) {
-    super(rest);
+    super({ size: { width: 0, height: 0 }, ...rest });
     this.animation = createAnimationWithSprite(this.position, "jewelAttack_1");
   }
 
@@ -21,7 +22,8 @@ export class StunSpell extends Spell {
   protected stopCasting() {
     super.stopCasting();
     if (!this.board.opponentBoard) return;
-    console.log("STUNNED");
+    console.log("Stunned");
+    this.board.opponentBoard.applyEffect(JEWEL_SPELL_TYPE.STUN);
   }
 
   update(t: number, dt: number): void {

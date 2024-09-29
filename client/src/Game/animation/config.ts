@@ -238,6 +238,11 @@ export const imageConfigs: Record<string, ImageConfig> = {
     scale: 2.5,
   },
 
+  stunEffect: {
+    imageName: "fireLoop",
+    scale: 2.5,
+  },
+
   jewelConvert: {
     framesPerSec: 15,
     imageName: "plague",

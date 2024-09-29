@@ -31,6 +31,9 @@ import {
 } from "./utils";
 import { Spell } from "./spells/base";
 import { AttackProjectile } from "./spells/attackProjectile";
+import { StunSpell } from "./spells/stun";
+import { Effect } from "./effects/base";
+import { StunEffect } from "./effects";
 
 export type JewelProps = Omit<BaseEntityProps, "type"> & {
   jewelType: number;
@@ -553,6 +556,7 @@ export class Board extends BaseEntity {
   health: number = 0;
   player: "p1" | "p2" = "p1";
   opponentBoard: Board | undefined;
+  effects: Record<string, Effect> = {};
   private healthBar: HealthBar;
   private hoveredInd = -1;
   private selectedInd = -1;
@@ -561,10 +565,12 @@ export class Board extends BaseEntity {
   private spellsToCast: Spell[] = []; // queue for spells to cast
   private currentSwapping: Jewel | undefined;
   private animations: Animation[] = [];
+  private effectKeys: string[] = []; // normalization for effects
   // states
   isFalling = false;
   isCastingSpell = false;
   isReadyToRefill = false;
+  isShaking = false;
 
   constructor({
     position,
@@ -595,13 +601,29 @@ export class Board extends BaseEntity {
     this.healthBar.applyDamage(val);
   }
 
-  private applySpell(type: number) {
+  applyEffect(type: number) {
+    let effect: Effect | undefined;
     switch (type) {
       case JEWEL_SPELL_TYPE.STUN:
-        console.log("stunned");
+        effect = new StunEffect({ activeTime: 5, effectType: "stun" });
+        const anim = createAnimationWithSprite(
+          this.getBoardCenter(),
+          "stunEffect",
+          { width: 50, height: 50 },
+          5,
+        );
+        anim.play();
+        this.animations.push(anim);
         break;
       default:
         return;
+    }
+    if (!effect) return;
+    if (this.effects[effect.effectType]) {
+      this.effects[effect.effectType].activate();
+    } else {
+      this.effects[effect.effectType] = effect;
+      this.effectKeys.push(effect.effectType);
     }
   }
 
@@ -635,6 +657,11 @@ export class Board extends BaseEntity {
     const converted2 = JEWEL_SPELL_CONVERSION[type2]?.parentType || type2;
     return converted1 === converted2;
   }
+  /**
+   * BFS like algorithm to get matches from position.
+   * It checks all neighbours and places all matching candidates into rows and cols
+   * Then we convert potential matches and return them as a number[]
+   */
 
   private getMatches(startInd: number) {
     const type = this.jewels[startInd].jewelType;
@@ -697,7 +724,7 @@ export class Board extends BaseEntity {
     return [...new Set(matches)];
   }
 
-  convertSetToMatchedIndices(set: Set<number>, step: number) {
+  private convertSetToMatchedIndices(set: Set<number>, step: number) {
     if (set.size < 3) return [];
     const vals = [...set].sort((a, b) => a - b);
     let prev = vals[0];
@@ -794,6 +821,25 @@ export class Board extends BaseEntity {
     );
     removalAnim.play();
     this.animations.push(removalAnim);
+    if (jewel.isSpell) {
+      this.createSpell(jewel.jewelType);
+    }
+  }
+
+  createSpell(spellType: number) {
+    switch (spellType) {
+      case JEWEL_SPELL_TYPE.STUN:
+        const spell = new StunSpell({
+          position: this.getBoardCenter(),
+          board: this,
+          spellType: spellType.toString(),
+        });
+        spell.cast();
+        this.spellsToCast.push(spell);
+        break;
+      default:
+        console.warn(`Spell: ${spellType} not found`);
+    }
   }
 
   getBoardCenter() {
@@ -828,12 +874,18 @@ export class Board extends BaseEntity {
           "jewelConvert",
           jewel.size,
         );
+        if (jewel.isSpell) {
+          this.createSpell(jewel.jewelType);
+        }
         this.animations.push(convertAnim);
         convertAnim.play();
       } else {
         this.jewels[currInd].mergeTo(
           this.jewels[indices[mergeInd]].getIndexPos(),
         );
+        if (this.jewels[currInd].isSpell) {
+          this.createSpell(this.jewels[currInd].jewelType);
+        }
         this.castProjectile(this.jewels[currInd].jewelType, {
           ...this.jewels[currInd].position,
         });
@@ -842,6 +894,7 @@ export class Board extends BaseEntity {
   }
 
   attemptSwap(ind1: number, ind2: number) {
+    if (this.effects["stun"]?.isActive) return false;
     if (ind1 === ind2) return false;
     if (!this.jewels[ind1] || !this.jewels[ind2]) return false;
 
@@ -906,6 +959,8 @@ export class Board extends BaseEntity {
       }
     }
   }
+
+  shakeBoard() {}
 
   private moveLineDown(startInd: number) {
     //start swapping element from bottom up in order
@@ -1148,6 +1203,13 @@ export class Board extends BaseEntity {
     }
   }
 
+  private updateEffects(t: number, dt: number) {
+    for (let i = 0; i < this.effectKeys.length; i++) {
+      const currEffect = this.effects[this.effectKeys[i]];
+      currEffect.update(t, dt);
+    }
+  }
+
   update(t: number, dt: number) {
     this.t = t;
     if (this.currentSwapping && !this.currentSwapping.isSwapping) {
@@ -1165,6 +1227,7 @@ export class Board extends BaseEntity {
     }
     this.updateAnimations(t, dt);
     this.updateSpells(t, dt);
+    this.updateEffects(t, dt);
     this.checkCollision();
 
     this.healthBar.update(t, dt);

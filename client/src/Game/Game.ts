@@ -3,23 +3,20 @@ import { Board } from "./board";
 
 export type GameProps = {
   mode?: string;
-  ctx: CanvasRenderingContext2D;
 };
 
 export type Matches = number[];
 
 export class Game {
   mode;
-  ctx: CanvasRenderingContext2D;
   p1Board: Board;
   p2Board: Board;
   isPaused = false;
   jewelBankP1: number[] = [];
   jewelBankP2: number[] = [];
 
-  constructor({ mode = "multiplayer", ctx }: GameProps) {
+  constructor({ mode = "multiplayer" }: GameProps) {
     this.mode = mode;
-    this.ctx = ctx;
     this.p1Board = new Board(P1_BOARD);
     this.p2Board = new Board(P2_BOARD);
   }
@@ -75,12 +72,5 @@ export class Game {
 
     this.p1Board.update(t, dt);
     this.p2Board.update(t, dt);
-  }
-
-  draw() {
-    this.p1Board.draw(this.ctx);
-    this.p2Board.draw(this.ctx);
-    this.p1Board.drawAnimations(this.ctx);
-    this.p2Board.drawAnimations(this.ctx);
   }
 }

@@ -2,7 +2,6 @@ import {
   JEWEL_SPELL_CONVERSION,
   JEWEL_SPELL_TYPE,
   JEWEL_TYPE_TO_COLOR,
-  MOUSE_SIZE,
 } from "./config";
 import { Matches } from "./Game";
 import {
@@ -19,7 +18,6 @@ import {
   Sprite,
   Animation,
 } from "./animation";
-import { HealthBar } from "./UI";
 import {
   convertTo2dInd,
   detectCollision,
@@ -34,6 +32,8 @@ import { AttackProjectile } from "./spells/attackProjectile";
 import { StunSpell } from "./spells/stun";
 import { Effect } from "./effects/base";
 import { StunEffect } from "./effects";
+import { VampiricSpell } from "./spells/vampiric";
+import { BoardUI } from "./UI/boardUI";
 
 export type JewelProps = Omit<BaseEntityProps, "type"> & {
   jewelType: number;
@@ -64,7 +64,6 @@ export class Jewel extends InteractableEntity {
   effect: Animation | undefined;
   // Diminished size for deeper collision detection
   draggingDetectionSize: Size;
-  opacity: number = 1; // for debbuggin, most likely to be removed
   // vecs
   fallingVec: Vector;
   movingVec: Vector = new Vector({ x: 0, y: 0 });
@@ -557,14 +556,10 @@ export class Board extends BaseEntity {
   player: "p1" | "p2" = "p1";
   opponentBoard: Board | undefined;
   effects: Record<string, Effect> = {};
-  private healthBar: HealthBar;
-  private hoveredInd = -1;
-  private selectedInd = -1;
-  private currentDraggingInd = -1;
+  spellsToCast: Spell[] = []; // queue for spells to cast
+  UI: BoardUI | undefined;
   private indicesToFall: number[] = [];
-  private spellsToCast: Spell[] = []; // queue for spells to cast
   private currentSwapping: Jewel | undefined;
-  private animations: Animation[] = [];
   private effectKeys: string[] = []; // normalization for effects
   // states
   isFalling = false;
@@ -589,7 +584,6 @@ export class Board extends BaseEntity {
       width: this.size.width / this.cols,
       height: this.size.height / this.rows,
     };
-    this.healthBar = this.initHealthBar();
   }
 
   setOpponentBoard(board: Board) {
@@ -598,7 +592,7 @@ export class Board extends BaseEntity {
 
   applyDamage(val: number) {
     this.health -= val;
-    this.healthBar.applyDamage(val);
+    this.UI?.healthBar?.applyDamage(val);
   }
 
   applyEffect(type: number) {
@@ -613,7 +607,7 @@ export class Board extends BaseEntity {
           5,
         );
         anim.play();
-        this.animations.push(anim);
+        this.UI?.animations?.push(anim);
         break;
       default:
         return;
@@ -625,25 +619,6 @@ export class Board extends BaseEntity {
       this.effects[effect.effectType] = effect;
       this.effectKeys.push(effect.effectType);
     }
-  }
-
-  private initHealthBar() {
-    const margin = 30;
-    const height = 40;
-    const position: Coords = {
-      x: this.position.x,
-      y: this.position.y + this.size.height + margin,
-    };
-    const size: Size = {
-      width: this.size.width,
-      height,
-    };
-    return new HealthBar({
-      position,
-      size,
-      board: this,
-      player: this.player,
-    });
   }
 
   private compareTypes(type1: number, type2: number) {
@@ -762,12 +737,6 @@ export class Board extends BaseEntity {
     return indices;
   }
 
-  private resetSwappingIndices() {
-    this.selectedInd = -1;
-    this.currentDraggingInd = -1;
-    this.hoveredInd = -1;
-  }
-
   swapJewels(ind1: number, ind2: number) {
     [this.jewels[ind1], this.jewels[ind2]] = [
       this.jewels[ind2],
@@ -820,26 +789,37 @@ export class Board extends BaseEntity {
       jewel.size,
     );
     removalAnim.play();
-    this.animations.push(removalAnim);
+    this.UI?.animations?.push(removalAnim);
     if (jewel.isSpell) {
       this.createSpell(jewel.jewelType);
     }
   }
 
   createSpell(spellType: number) {
+    let spell: Spell | undefined;
     switch (spellType) {
       case JEWEL_SPELL_TYPE.STUN:
-        const spell = new StunSpell({
+        spell = new StunSpell({
           position: this.getBoardCenter(),
           board: this,
           spellType: spellType.toString(),
         });
-        spell.cast();
-        this.spellsToCast.push(spell);
+        break;
+      case JEWEL_SPELL_TYPE.VAMPIRE:
+        spell = new VampiricSpell({
+          position: this.getBoardCenter(),
+          board: this,
+          spellType: spellType.toString(),
+        });
         break;
       default:
         console.warn(`Spell: ${spellType} not found`);
     }
+    if (!spell) {
+      return;
+    }
+    spell.cast();
+    this.spellsToCast.push(spell);
   }
 
   getBoardCenter() {
@@ -868,16 +848,17 @@ export class Board extends BaseEntity {
       const currInd = indices[i];
       if (i === mergeInd) {
         const jewel = this.jewels[currInd];
+        if (jewel.isSpell) {
+          this.createSpell(jewel.jewelType);
+        }
+
         jewel.convertTo(mergeTo);
         const convertAnim = createAnimationWithSprite(
           jewel.position,
           "jewelConvert",
           jewel.size,
         );
-        if (jewel.isSpell) {
-          this.createSpell(jewel.jewelType);
-        }
-        this.animations.push(convertAnim);
+        this.UI?.animations?.push(convertAnim);
         convertAnim.play();
       } else {
         this.jewels[currInd].mergeTo(
@@ -1004,81 +985,6 @@ export class Board extends BaseEntity {
     }
   }
 
-  private updateDragging(mousePos: Coords) {
-    if (this.currentDraggingInd < 0) return;
-    this.jewels[this.currentDraggingInd].dragTo(mousePos);
-  }
-
-  mouseDown(mousePos: Coords) {
-    if (this.hoveredInd > -1) {
-      const currJewel = this.jewels[this.hoveredInd];
-      currJewel.mouseDown(mousePos);
-      currJewel.resetMouseStates();
-      currJewel.setDragging(true);
-      this.currentDraggingInd = this.hoveredInd;
-    }
-  }
-
-  private resetDragging() {
-    if (this.currentDraggingInd > -1) {
-      const currentDragging = this.jewels[this.currentDraggingInd];
-      currentDragging.setDragging(false);
-      if (!currentDragging.isMerging) {
-        currentDragging.moveToIndPos();
-      }
-    }
-    if (this.selectedInd > -1) {
-      const otherJewel = this.jewels[this.selectedInd];
-
-      otherJewel.moveTo(otherJewel.getIndexPos());
-    }
-    this.resetSwappingIndices();
-  }
-
-  mouseUp(_mousePos: Coords) {
-    if (this.selectedInd === this.currentDraggingInd || this.selectedInd < 0) {
-      this.resetDragging();
-    }
-
-    if (this.selectedInd > -1) {
-      const isSuccess = this.attemptSwap(
-        this.selectedInd,
-        this.currentDraggingInd,
-      );
-      if (isSuccess) this.selectedInd = -1;
-      this.resetDragging();
-
-      return;
-    }
-  }
-
-  mouseOut(mousePos: Coords) {
-    this.mouseUp(mousePos);
-  }
-
-  mouseMove(mousePos: Coords) {
-    this.updateDragging(mousePos);
-    if (
-      this.hoveredInd > -1 &&
-      this.jewels[this.hoveredInd].checkIsHovered(mousePos)
-    ) {
-      return;
-    }
-
-    this.hoveredInd = -1;
-
-    if (!detectCollision(this.position, this.size, mousePos, MOUSE_SIZE)) {
-      return;
-    }
-    for (let i = 0; i < this.jewels.length; i++) {
-      const curr = this.jewels[i];
-      if (curr.checkIsHovered(mousePos)) {
-        this.hoveredInd = i;
-        return;
-      }
-    }
-  }
-
   checkCollision() {
     for (let i = 0; i < this.jewels.length; i++) {
       const jewel1 = this.jewels[i];
@@ -1088,22 +994,6 @@ export class Board extends BaseEntity {
 
         if (jewel1 !== currJewel) {
           jewel1.checkCollision(currJewel);
-        }
-
-        if (jewel1.isDragging && jewel1 !== currJewel) {
-          if (jewel1.checkDraggingCollision(currJewel)) {
-            const currentDraggingPos = jewel1.getIndexPos();
-            if (
-              currJewel.targetPosition.x !== currentDraggingPos.x ||
-              currentDraggingPos.y !== currJewel.targetPosition.y
-            ) {
-              currJewel.moveTo(currentDraggingPos);
-              this.selectedInd = j;
-            } else {
-              currJewel.moveToIndPos();
-              this.selectedInd = this.currentDraggingInd;
-            }
-          }
         }
       }
     }
@@ -1179,18 +1069,6 @@ export class Board extends BaseEntity {
     }
   }
 
-  private updateAnimations(t: number, dt: number) {
-    let endedAnimationExists = false;
-    for (let i = 0; i < this.animations.length; i++) {
-      const anim = this.animations[i];
-      anim.update(t, dt);
-      endedAnimationExists = !anim.isAnimating;
-    }
-    if (endedAnimationExists) {
-      this.animations = this.animations.filter((anim) => anim.isAnimating);
-    }
-  }
-
   private updateSpells(t: number, dt: number) {
     let endedSpellExists = false;
     for (let i = 0; i < this.spellsToCast.length; i++) {
@@ -1225,12 +1103,9 @@ export class Board extends BaseEntity {
         disabledExist = true;
       }
     }
-    this.updateAnimations(t, dt);
     this.updateSpells(t, dt);
     this.updateEffects(t, dt);
     this.checkCollision();
-
-    this.healthBar.update(t, dt);
 
     if (this.isFalling) {
       this.updateFalling();
@@ -1238,43 +1113,6 @@ export class Board extends BaseEntity {
 
     if (disabledExist) {
       this.moveJewelsDown();
-    }
-  }
-
-  drawAnimations(ctx: CanvasRenderingContext2D) {
-    for (let anim of this.animations) {
-      anim.draw(ctx);
-    }
-    for (let spell of this.spellsToCast) {
-      spell.draw(ctx);
-    }
-  }
-
-  draw(ctx: CanvasRenderingContext2D) {
-    let draggingEnt: Jewel | undefined;
-    let convertingEnt: Jewel | undefined;
-    ctx.fillStyle = "black";
-    ctx.fillRect(
-      this.position.x,
-      this.position.y,
-      this.size.width,
-      this.size.height,
-    );
-    this.healthBar.draw(ctx);
-    for (let jewelEnt of this.jewels) {
-      if (jewelEnt.isDragging) {
-        draggingEnt = jewelEnt;
-      } else if (jewelEnt.isConverting) {
-        convertingEnt = jewelEnt;
-      } else {
-        jewelEnt.draw(ctx);
-      }
-    }
-    if (convertingEnt) {
-      convertingEnt.draw(ctx);
-    }
-    if (draggingEnt) {
-      draggingEnt.draw(ctx);
     }
   }
 }

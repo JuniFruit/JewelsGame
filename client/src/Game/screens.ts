@@ -1,6 +1,7 @@
 import { DEFAULT_BUTTON_THEME } from "./config";
 import { Game } from "./Game";
-import { Button, ScreenLayout, UI } from "./UI";
+import { ScreenLayout, UI } from "./UI";
+import { Button } from "./UI/button";
 import { Debug } from "./utils";
 
 export function initGameScreens(
@@ -9,8 +10,6 @@ export function initGameScreens(
   ctx: CanvasRenderingContext2D,
   debugInstance?: Debug,
 ) {
-  const canvas = ctx.canvas;
-
   const screens: ScreenLayout[] = [
     {
       screenName: "game",
@@ -39,7 +38,7 @@ function mainMenuButtons(ctx: CanvasRenderingContext2D, ui: UI) {
       },
       ctx,
       ...DEFAULT_BUTTON_THEME,
-      text: "Start game",
+      text: "Solo game",
       padding: 10,
       fontSize: "20px",
       onClick: () => ui.setCurrentScreen("game"),
@@ -59,7 +58,6 @@ function mainMenuButtons(ctx: CanvasRenderingContext2D, ui: UI) {
 }
 
 function debugButtons(ctx: CanvasRenderingContext2D, debugInstance: Debug) {
-  const canvas = ctx.canvas;
   return [
     new Button({
       position: {
@@ -122,5 +120,4 @@ function debugButtons(ctx: CanvasRenderingContext2D, debugInstance: Debug) {
       onClick: () => debugInstance.slowTime(),
     }),
   ];
-  return elements;
 }

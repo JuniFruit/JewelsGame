@@ -27,7 +27,7 @@ export async function init(canvas: HTMLCanvasElement) {
   ui = new UI(context);
   await initFonts(ui);
   await initAllImages();
-  game = new Game({ ctx });
+  game = new Game({});
   debugInstance = DEBUG ? new Debug(game, context) : undefined;
 
   ui.game = game;
@@ -69,6 +69,7 @@ function gameLoop(timeStamp: number) {
     } else {
       game.update(timePassed, dt);
     }
+    ui.update(timePassed, dt);
 
     secondsPassed -= dt;
     timePassed += dt;

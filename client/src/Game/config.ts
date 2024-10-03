@@ -1,6 +1,6 @@
 import { BoardProps } from "./board";
 import { Size } from "./sharedEntities";
-import { ButtonProps } from "./UI";
+import { ButtonProps } from "./UI/button";
 
 // set debug mode, additional info and buttons will be rendered
 export const DEBUG = true;

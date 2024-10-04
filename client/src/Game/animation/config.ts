@@ -249,6 +249,11 @@ export const imageConfigs: Record<string, ImageConfig> = {
     scale: 3,
     isLooped: false,
   },
+
+  poisonEffect: {
+    imageName: "plague",
+    scale: 3,
+  },
 };
 
 const htmlImages: Record<string, HTMLImageElement> = {};

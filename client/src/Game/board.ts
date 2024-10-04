@@ -31,9 +31,10 @@ import { Spell } from "./spells/base";
 import { AttackProjectile } from "./spells/attackProjectile";
 import { StunSpell } from "./spells/stun";
 import { Effect } from "./effects/base";
-import { StunEffect } from "./effects";
+import { PoisonEffect, StunEffect } from "./effects";
 import { VampiricSpell } from "./spells/vampiric";
 import { BoardUI } from "./UI/boardUI";
+import { PoisonSpell } from "./spells/poison";
 
 export type JewelProps = Omit<BaseEntityProps, "type"> & {
   jewelType: number;
@@ -76,7 +77,6 @@ export class Jewel extends InteractableEntity {
   removeDuration = 0.2;
   convertDuration = 0.4;
   // states
-  isSpell = false;
   isMoving = false;
   isFalling = false;
   isPhysicalized = false;
@@ -173,6 +173,10 @@ export class Jewel extends InteractableEntity {
     // this.hoveredSprite = createSprite(this.position, "jewelHover", this.size);
     this.jewelSprite.play();
     // this.hoveredSprite.play();
+  }
+
+  get isSpell() {
+    return this.jewelType > 6;
   }
 
   checkDraggingCollision(otherJewel: Jewel) {
@@ -394,7 +398,6 @@ export class Jewel extends InteractableEntity {
     this.resetMouseStates();
     this.isRemoving = false;
     this.isMerging = false;
-    this.isSpell = true;
     this.isConverting = true;
     this.convertTimer.start();
     this.targetJewelType = targetType;
@@ -595,20 +598,45 @@ export class Board extends BaseEntity {
     this.UI?.healthBar?.applyDamage(val);
   }
 
+  applyHeal(val: number) {
+    this.health += val;
+    this.UI?.healthBar?.applyHeal(val);
+  }
+
   applyEffect(type: number) {
     let effect: Effect | undefined;
     switch (type) {
       case JEWEL_SPELL_TYPE.STUN:
-        effect = new StunEffect({ activeTime: 5, effectType: "stun" });
-        const anim = createAnimationWithSprite(
+        effect = new StunEffect({
+          activeTime: 5,
+          effectType: "stun",
+          board: this,
+        });
+        const stunAnim = createAnimationWithSprite(
           this.getBoardCenter(),
           "stunEffect",
           { width: 50, height: 50 },
           5,
         );
-        anim.play();
-        this.UI?.animations?.push(anim);
+        stunAnim.play();
+        this.UI?.animations?.push(stunAnim);
         break;
+      case JEWEL_SPELL_TYPE.POISON:
+        effect = new PoisonEffect({
+          activeTime: 5,
+          effectType: "poison",
+          board: this,
+        });
+        const poisonAnim = createAnimationWithSprite(
+          this.getBoardCenter(),
+          "poisonEffect",
+          { width: 50, height: 50 },
+          5,
+        );
+        poisonAnim.play();
+        this.UI?.animations?.push(poisonAnim);
+        break;
+
       default:
         return;
     }
@@ -616,6 +644,9 @@ export class Board extends BaseEntity {
     if (this.effects[effect.effectType]) {
       this.effects[effect.effectType].activate();
     } else {
+      effect.activate();
+      console.log(effect.isActive, effect.effectType);
+
       this.effects[effect.effectType] = effect;
       this.effectKeys.push(effect.effectType);
     }
@@ -812,6 +843,14 @@ export class Board extends BaseEntity {
           spellType: spellType.toString(),
         });
         break;
+      case JEWEL_SPELL_TYPE.POISON:
+        spell = new PoisonSpell({
+          position: this.getBoardCenter(),
+          board: this,
+          spellType: spellType.toString(),
+        });
+        break;
+
       default:
         console.warn(`Spell: ${spellType} not found`);
     }

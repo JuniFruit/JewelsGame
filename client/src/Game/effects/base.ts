@@ -1,20 +1,25 @@
+import { Board } from "../board";
 import { Timer } from "../sharedEntities";
 
 export type EffectProps = {
   activeTime?: number;
   effectType: string;
+  board: Board;
 };
 
 export abstract class Effect {
   isActive = false;
   timer: Timer;
   effectType: string;
-  constructor({ activeTime = 0, effectType }: EffectProps) {
+  board: Board;
+  constructor({ activeTime = 0, effectType, board }: EffectProps) {
     this.effectType = effectType;
     this.timer = new Timer({ time: activeTime });
+    this.board = board;
   }
 
   activate() {
+    console.log("activated", this.effectType);
     this.isActive = true;
     this.timer.reset();
     this.timer.start();
@@ -25,5 +30,4 @@ export abstract class Effect {
   }
 
   abstract update(t: number, dt: number): void;
-  abstract draw(ctx: CanvasRenderingContext2D): void;
 }

@@ -11,7 +11,7 @@ export class VampiricSpell extends Spell {
       this.position,
       "jewelConvert",
       { width: 50, height: 50 },
-      2,
+      0.5,
     );
   }
 
@@ -23,7 +23,7 @@ export class VampiricSpell extends Spell {
 
   protected stopCasting(): void {
     super.stopCasting();
-    this.board.health += 5;
+    this.board.applyHeal(5);
   }
 
   update(t: number, dt: number): void {

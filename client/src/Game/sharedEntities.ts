@@ -77,6 +77,7 @@ export class InteractableEntity extends BaseEntity {
 
 export type TimerProps = {
   time: number;
+  pulseBound?: number;
 };
 
 export class Timer {
@@ -84,15 +85,20 @@ export class Timer {
   timeLeft: number;
   isGoing = false;
   isEnded = false;
-  constructor({ time }: TimerProps) {
+  onPulse?: () => void;
+  private pulseBound = 0;
+  private pulseTime = 0;
+  constructor({ time, pulseBound = 0 }: TimerProps) {
     this.time = time;
     this.timeLeft = time;
+    this.pulseBound = pulseBound;
   }
 
   reset() {
     this.isGoing = false;
     this.isEnded = false;
     this.timeLeft = this.time;
+    this.pulseTime = 0;
   }
 
   start() {
@@ -104,6 +110,12 @@ export class Timer {
     this.isEnded = true;
     this.isGoing = false;
   }
+  /**
+   * Pulse every N seconds, provide N
+   */
+  setPulseBound(val: number) {
+    this.pulseBound = val;
+  }
 
   setTime(val: number) {
     this.time = val;
@@ -111,6 +123,13 @@ export class Timer {
 
   update(_t: number, dt: number) {
     if (!this.isGoing) return;
+    if (this.pulseBound) {
+      this.pulseTime += dt;
+      if (this.pulseTime >= this.pulseBound) {
+        this.onPulse?.();
+        this.pulseTime = 0;
+      }
+    }
     this.timeLeft -= dt;
     if (this.timeLeft <= 0) {
       this.stop();

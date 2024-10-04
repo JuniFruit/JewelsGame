@@ -605,50 +605,54 @@ export class Board extends BaseEntity {
 
   applyEffect(type: number) {
     let effect: Effect | undefined;
+    let anim: Animation | undefined;
     switch (type) {
       case JEWEL_SPELL_TYPE.STUN:
-        effect = new StunEffect({
-          activeTime: 5,
-          effectType: "stun",
-          board: this,
-        });
-        const stunAnim = createAnimationWithSprite(
+        effect =
+          this.effects.stun ||
+          new StunEffect({
+            activeTime: 5,
+            effectType: "stun",
+            board: this,
+          });
+        anim = createAnimationWithSprite(
           this.getBoardCenter(),
           "stunEffect",
           { width: 50, height: 50 },
           5,
         );
-        stunAnim.play();
-        this.UI?.animations?.push(stunAnim);
         break;
       case JEWEL_SPELL_TYPE.POISON:
-        effect = new PoisonEffect({
-          activeTime: 5,
-          effectType: "poison",
-          board: this,
-        });
-        const poisonAnim = createAnimationWithSprite(
+        effect =
+          this.effects.poison ||
+          new PoisonEffect({
+            activeTime: 5,
+            effectType: "poison",
+            board: this,
+          });
+        anim = createAnimationWithSprite(
           this.getBoardCenter(),
           "poisonEffect",
           { width: 50, height: 50 },
           5,
         );
-        poisonAnim.play();
-        this.UI?.animations?.push(poisonAnim);
         break;
 
       default:
         return;
     }
-    if (!effect) return;
-    if (this.effects[effect.effectType]) {
-      this.effects[effect.effectType].activate();
-    } else {
-      effect.activate();
-      console.log(effect.isActive, effect.effectType);
-
+    if (!effect || effect.isActive) return;
+    if (!this.effects[effect.effectType]) {
       this.effects[effect.effectType] = effect;
       this.effectKeys.push(effect.effectType);
+    }
+    if (!effect.isActive) {
+      effect.activate();
+    }
+
+    if (effect.isActive && anim) {
+      anim.play();
+      this.UI?.animations?.push(anim);
     }
   }
 

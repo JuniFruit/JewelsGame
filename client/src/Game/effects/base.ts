@@ -19,10 +19,8 @@ export abstract class Effect {
   }
 
   activate() {
-    console.log("activated", this.effectType);
-    this.isActive = true;
-    this.timer.reset();
     this.timer.start();
+    this.isActive = true;
   }
 
   deactivate() {

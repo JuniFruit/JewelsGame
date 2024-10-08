@@ -848,6 +848,38 @@ export class Board extends BaseEntity {
     }
   }
 
+  /**
+   * Returns numeric array that represents current jewels
+   * @param [isNormalized=false] keep spell types, otherwise covert them into parent types
+   */
+  getLayout(isNormalized = false) {
+    const result: number[] = [];
+    for (let i = 0; i < this.jewels.length; i++) {
+      const jewel = this.jewels[i];
+      result[i] = jewel.jewelType;
+
+      if (isNormalized && jewel.isSpell) {
+        result[i] = jewel.jewelParentType;
+      }
+    }
+    return result;
+  }
+
+  isSolvable(layout?: number[]) {
+    const l = layout || this.getLayout();
+    let s = l.join("");
+    const len = s.length;
+
+    for (let i = this.cols - 1; i < len; i += this.cols) {
+      s = s.slice(0, i + 1) + "A" + s.slice(i + 1);
+    }
+    const result =
+      /(\d)(\1(\d|.{6}|.{9})|(\d|.{6}|.{9})\1|.{7}\1(.|.{9})|(.|.{9})\1.{7}|(.{7,9}|.{17})\1.{8}|.{8}\1(.{7,9}|.{17}))\1/.test(
+        s,
+      );
+    return result;
+  }
+
   createSpell(jewel: Jewel) {
     let spell: Spell | undefined;
     const spellType = jewel.jewelType;
@@ -1117,18 +1149,7 @@ export class Board extends BaseEntity {
     return jewel;
   }
 
-  private getTotalRows(layout: number[]) {
-    for (let i = layout.length - 1; i >= 0; i--) {
-      if (layout[i] !== -1) {
-        const { row } = convertTo2dInd(i, this.rows, this.cols);
-        return row;
-      }
-    }
-    return layout.length - 1;
-  }
-
-  generateJewels(layout: number[], isGameStart = false) {
-    const totalRows = this.getTotalRows(layout);
+  generateJewels(layout: number[], isGameStart = false, totalRows: number = 8) {
     for (let i = 0; i < layout.length; i++) {
       const currType = layout[i];
       if (currType < 1) continue;

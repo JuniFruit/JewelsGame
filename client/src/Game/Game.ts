@@ -1,5 +1,6 @@
 import { JEWEL_TYPE, P1_BOARD, P2_BOARD } from "./config";
 import { Board } from "./board";
+import { convertTo2dInd } from "./utils";
 
 export type GameProps = {
   mode?: string;
@@ -26,17 +27,26 @@ export class Game {
   }
 
   test(board: Board) {
-    const layout = [];
+    const layout = board.getLayout();
+    const layoutToGenerate: number[] = [];
     const types = Object.values(JEWEL_TYPE);
+    let lastDisabledInd = 0;
 
-    for (let i = 0; i < board.jewels.length; i++) {
-      if (board.jewels[i].isDisabled) {
+    for (let i = 0; i < layout.length; i++) {
+      if (layout[i] === 0) {
         layout[i] = types[Math.floor(Math.random() * 6)];
+        layoutToGenerate[i] = layout[i];
+        lastDisabledInd = i;
       } else {
-        layout[i] = -1;
+        layoutToGenerate[i] = -1;
       }
     }
-    board.generateJewels(layout);
+    const { row } = convertTo2dInd(lastDisabledInd, board.rows, board.cols);
+    if (board.isSolvable(layout)) {
+      board.generateJewels(layoutToGenerate, false, row);
+    } else {
+      this.test(board);
+    }
   }
 
   private addJewels(player: "p1" | "p2") {

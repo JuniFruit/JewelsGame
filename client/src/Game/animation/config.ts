@@ -237,22 +237,27 @@ export const imageConfigs: Record<string, ImageConfig> = {
     imageName: "light",
     scale: 2.5,
   },
-
   stunEffect: {
     imageName: "fireLoop",
     scale: 2.5,
   },
-
   jewelConvert: {
     framesPerSec: 15,
     imageName: "plague",
     scale: 3,
     isLooped: false,
   },
-
   poisonEffect: {
     imageName: "plague",
     scale: 3,
+  },
+  shieldEffect: {
+    imageName: "shield",
+    scale: 2.5,
+  },
+  critStrikeEffect: {
+    imageName: "lightning",
+    scale: 2.5,
   },
 };
 

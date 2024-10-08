@@ -31,10 +31,13 @@ import { Spell } from "./spells/base";
 import { AttackProjectile } from "./spells/attackProjectile";
 import { StunSpell } from "./spells/stun";
 import { Effect } from "./effects/base";
-import { PoisonEffect, StunEffect } from "./effects";
+import { PoisonEffect, ShieldEffect, StunEffect } from "./effects";
 import { VampiricSpell } from "./spells/vampiric";
 import { BoardUI } from "./UI/boardUI";
 import { PoisonSpell } from "./spells/poison";
+import { ShieldSpell } from "./spells/shield";
+import { ExplosionSpell } from "./spells/explosion";
+import { CritStrike } from "./spells/critStrike";
 
 export type JewelProps = Omit<BaseEntityProps, "type"> & {
   jewelType: number;
@@ -619,7 +622,7 @@ export class Board extends BaseEntity {
           this.getBoardCenter(),
           "stunEffect",
           { width: 50, height: 50 },
-          5,
+          effect.timer.time,
         );
         break;
       case JEWEL_SPELL_TYPE.POISON:
@@ -634,14 +637,29 @@ export class Board extends BaseEntity {
           this.getBoardCenter(),
           "poisonEffect",
           { width: 50, height: 50 },
-          5,
+          effect.timer.time,
+        );
+        break;
+      case JEWEL_SPELL_TYPE.SHIELD:
+        effect =
+          this.effects.shield ||
+          new ShieldEffect({
+            activeTime: 2,
+            effectType: "shield",
+            board: this,
+          });
+        anim = createAnimationWithSprite(
+          this.getBoardCenter(),
+          "shieldEffect",
+          { width: 50, height: 50 },
+          effect.timer.time,
         );
         break;
 
       default:
         return;
     }
-    if (!effect || effect.isActive) return;
+    if (!effect) return;
     if (!this.effects[effect.effectType]) {
       this.effects[effect.effectType] = effect;
       this.effectKeys.push(effect.effectType);
@@ -746,7 +764,7 @@ export class Board extends BaseEntity {
     return vals;
   }
 
-  private getNeighorIndices(ind: number) {
+  getNeighorIndices(ind: number) {
     const indices = [];
     const { row } = convertTo2dInd(ind, this.rows, this.cols);
 
@@ -826,12 +844,13 @@ export class Board extends BaseEntity {
     removalAnim.play();
     this.UI?.animations?.push(removalAnim);
     if (jewel.isSpell) {
-      this.createSpell(jewel.jewelType);
+      this.createSpell(jewel);
     }
   }
 
-  createSpell(spellType: number) {
+  createSpell(jewel: Jewel) {
     let spell: Spell | undefined;
+    const spellType = jewel.jewelType;
     switch (spellType) {
       case JEWEL_SPELL_TYPE.STUN:
         spell = new StunSpell({
@@ -850,6 +869,29 @@ export class Board extends BaseEntity {
       case JEWEL_SPELL_TYPE.POISON:
         spell = new PoisonSpell({
           position: this.getBoardCenter(),
+          board: this,
+          spellType: spellType.toString(),
+        });
+        break;
+      case JEWEL_SPELL_TYPE.SHIELD:
+        spell = new ShieldSpell({
+          position: this.getBoardCenter(),
+          board: this,
+          spellType: spellType.toString(),
+        });
+        break;
+
+      case JEWEL_SPELL_TYPE.EXPLOSION:
+        spell = new ExplosionSpell({
+          position: jewel.getIndexPos(),
+          board: this,
+          spellType: spellType.toString(),
+          originInd: jewel.index,
+        });
+        break;
+
+      case JEWEL_SPELL_TYPE.CRIT_STRIKE:
+        spell = new CritStrike({
           board: this,
           spellType: spellType.toString(),
         });
@@ -892,7 +934,7 @@ export class Board extends BaseEntity {
       if (i === mergeInd) {
         const jewel = this.jewels[currInd];
         if (jewel.isSpell) {
-          this.createSpell(jewel.jewelType);
+          this.createSpell(jewel);
         }
 
         jewel.convertTo(mergeTo);
@@ -908,7 +950,7 @@ export class Board extends BaseEntity {
           this.jewels[indices[mergeInd]].getIndexPos(),
         );
         if (this.jewels[currInd].isSpell) {
-          this.createSpell(this.jewels[currInd].jewelType);
+          this.createSpell(this.jewels[currInd]);
         }
         this.castProjectile(this.jewels[currInd].jewelType, {
           ...this.jewels[currInd].position,

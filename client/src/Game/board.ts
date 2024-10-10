@@ -325,7 +325,7 @@ export class Jewel extends InteractableEntity {
     const dx = Math.abs(this.position.x - this.targetPosition.x);
     const dy = Math.abs(this.position.y - this.targetPosition.y);
     const speed = Math.abs(vel);
-    return dx < speed && dy < speed;
+    return dx <= speed && dy <= speed;
   }
 
   mergeTo(pos: Coords) {
@@ -349,6 +349,7 @@ export class Jewel extends InteractableEntity {
 
     const { distance, angle } = getMovingProps(this.position, pos);
     if (!distance) {
+      this.isMoving = false;
       if (this.isSwapping) {
         this.isSwapping = false;
         return;

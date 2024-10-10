@@ -1,8 +1,6 @@
 import { FONT, FontWeight } from "../assets/fonts/fonts";
 import { DEFAULT_FONT_SIZE } from "../config";
-import { Game } from "../Game";
 import { Coords, InteractableEntity } from "../sharedEntities";
-import { BoardUI } from "./boardUI";
 import { ScreenLayout } from "./screens";
 
 export class UI {
@@ -15,12 +13,13 @@ export class UI {
   fontWeight = "light";
   currentFont = `${this.fontWeight} ${this.fontSize} ${this.fontFamily}`;
   currentHoveredElement: InteractableEntity | undefined;
-  p1BoardUI: BoardUI | undefined;
-  p2BoardUI: BoardUI | undefined;
-  game: Game | undefined;
 
   constructor(ctx: CanvasRenderingContext2D) {
     this.ctx = ctx;
+  }
+
+  private beforeScreenChange() {
+    this.currentHoveredElement = undefined;
   }
 
   setCurrentScreen(key: string) {
@@ -29,23 +28,9 @@ export class UI {
       return;
     }
     const screen = this.screens.get(key);
+    this.beforeScreenChange();
     this.currentScreen = screen!.screenName;
     this.currentElements = screen!.elements;
-    if (key.includes("game")) {
-      this.initUIBoards();
-    }
-  }
-
-  private initUIBoards() {
-    if (!this.game) return;
-    this.p1BoardUI = new BoardUI({
-      board: this.game.p1Board,
-    });
-    this.p2BoardUI = new BoardUI({
-      board: this.game.p2Board,
-    });
-    this.game.p1Board.UI = this.p1BoardUI;
-    this.game.p2Board.UI = this.p2BoardUI;
   }
 
   setCurrentFont(weight: FontWeight, family: string, size = DEFAULT_FONT_SIZE) {
@@ -64,34 +49,24 @@ export class UI {
   }
 
   mouseDown(mousePos: Coords) {
-    this.p1BoardUI?.mouseDown(mousePos);
     if (this.currentHoveredElement) {
       this.currentHoveredElement.mouseDown(mousePos);
     }
   }
 
   mouseUp(mousePos: Coords) {
-    this.p1BoardUI?.mouseUp(mousePos);
-
     if (this.currentHoveredElement) {
       this.currentHoveredElement.mouseUp(mousePos);
     }
   }
 
   mouseOut(mousePos: Coords) {
-    this.p1BoardUI?.mouseOut(mousePos);
     if (this.currentHoveredElement) {
       this.currentHoveredElement.mouseOut(mousePos);
     }
   }
 
   checkIsMouseIntersecting(mousePos: Coords) {
-    if (this.p1BoardUI) {
-      this.p1BoardUI.mouseMove(mousePos);
-    }
-    // if (this.game?.p2Board) {
-    //   this.game.p2Board.checkIsHovered(mousePos);
-    // }
     if (
       this.currentHoveredElement &&
       this.currentHoveredElement.checkIsHovered(mousePos)
@@ -108,32 +83,12 @@ export class UI {
   }
 
   update(t: number, dt: number) {
-    if (this.currentScreen.includes("game")) {
-      this.p1BoardUI?.update(t, dt);
-      this.p2BoardUI?.update(t, dt);
+    for (let i = 0; i < this.currentElements.length; i++) {
+      this.currentElements[i].update(t, dt);
     }
-  }
-
-  drawGame() {
-    if (!this.p1BoardUI || !this.p2BoardUI) return;
-    this.p1BoardUI.draw(this.ctx);
-    this.p2BoardUI.draw(this.ctx);
-    this.p1BoardUI.drawAnimations(this.ctx);
-    this.p2BoardUI.drawAnimations(this.ctx);
   }
 
   draw() {
-    if (this.game?.isOver && this.game.winner) {
-      this.ctx.fillText(
-        "Winner is " + this.game.winner,
-        this.ctx.canvas.getBoundingClientRect().width / 2,
-        250,
-      );
-    }
-
-    if (this.currentScreen.includes("game")) {
-      this.drawGame();
-    }
     for (let i = 0; i < this.currentElements.length; i++) {
       this.currentElements[i].draw(this.ctx);
     }

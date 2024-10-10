@@ -33,6 +33,8 @@ export class BaseEntity {
     this.targetPosition = { ...position };
   }
 
+  update(t: number, dt: number) {}
+
   draw(_ctx: CanvasRenderingContext2D) {}
 }
 

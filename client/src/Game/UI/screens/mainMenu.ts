@@ -1,9 +1,13 @@
 import { UI } from "..";
 import { DEFAULT_BUTTON_THEME } from "../../config";
+import { Game } from "../../Game";
 import { Button } from "../button";
 
-export function mainMenuButtons(ctx: CanvasRenderingContext2D, ui: UI) {
-  console.log(ctx.canvas.getBoundingClientRect().x);
+export function mainMenuButtons(
+  ctx: CanvasRenderingContext2D,
+  ui: UI,
+  game: Game,
+) {
   return [
     new Button({
       position: {
@@ -15,7 +19,10 @@ export function mainMenuButtons(ctx: CanvasRenderingContext2D, ui: UI) {
       text: "Solo game",
       padding: 10,
       fontSize: "20px",
-      onClick: () => ui.setCurrentScreen("solo_game"),
+      onClick: () => {
+        ui.setCurrentScreen("solo_game");
+        game.setGameMode("singleplayer");
+      },
     }),
     new Button({
       position: {

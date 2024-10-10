@@ -148,7 +148,7 @@ export class Debug {
   isFPSThrottling = false;
   FPSThrottle = 0.05; // ~15fps
   private rectFont = "normal 15px Arial";
-  private rectFillStyle = "black";
+  private rectFillStyle = "green";
 
   constructor(game: Game, ctx: CanvasRenderingContext2D) {
     this.game = game;
@@ -206,6 +206,8 @@ export class Debug {
   }
 
   showDebug() {
+    this.ctx.fillStyle = this.rectFillStyle;
+
     if (this.jewelDebug) {
       for (let i = 0; i < this.game.p1Board.jewels.length; i++) {
         const jewel = this.game.p1Board.jewels[i];
@@ -215,7 +217,7 @@ export class Debug {
           jewel.position.y + jewel.size.height * 0.9,
         );
         this.ctx.fillText(
-          `mer:${jewel.isMerging}`,
+          `sel:${jewel.isSelectable()}`,
           jewel.position.x,
           jewel.position.y + 10,
         );
@@ -242,7 +244,6 @@ export class Debug {
       }
     }
     this.ctx.font = this.rectFont;
-    this.ctx.fillStyle = this.rectFillStyle;
     this.ctx.lineWidth = 2;
     this.ctx.strokeStyle = "red";
     this.ctx.strokeRect(0, 0, this.canvasW, this.canvasH);
@@ -265,6 +266,7 @@ export class Debug {
       10,
       125,
     );
+    this.ctx.fillText("isAIenabled: " + !!this.game.AI, 10, 145);
   }
 }
 

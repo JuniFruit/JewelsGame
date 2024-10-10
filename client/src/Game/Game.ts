@@ -2,15 +2,16 @@ import { JEWEL_TYPE, P1_BOARD, P2_BOARD } from "./config";
 import { Board } from "./board";
 import { convertTo2dInd } from "./utils";
 import { Timer } from "./sharedEntities";
+import { AI } from "./AI";
 
 export type GameProps = {
-  mode?: string;
+  mode?: "multiplayer" | "singleplayer";
 };
 
 export type Matches = number[];
 
 export class Game {
-  mode;
+  mode: "multiplayer" | "singleplayer";
   p1Board: Board;
   p2Board: Board;
   isPaused = false;
@@ -23,6 +24,7 @@ export class Game {
   rows: number;
   timeElapsed = 0;
   countDownTimer: Timer;
+  AI: AI | undefined;
 
   constructor({ mode = "multiplayer" }: GameProps) {
     this.mode = mode;
@@ -62,6 +64,7 @@ export class Game {
     this.countDownTimer.reset();
     this.p1Board.reset();
     this.p2Board.reset();
+    this.AI?.reset();
   }
 
   startGame() {
@@ -163,8 +166,18 @@ export class Game {
     this.p2Board.removeOrMergeMatches();
   }
 
+  setGameMode(mode: "singleplayer" | "multiplayer") {
+    this.mode = mode;
+    if (mode === "singleplayer") {
+      this.AI = new AI({ game: this, player: "p2" });
+    } else {
+      this.AI = undefined;
+    }
+  }
+
   update(t: number, dt: number) {
     if (this.isPaused || this.isOver) return;
+
     if (!this.isStarted && !this.countDownTimer.isEnded) {
       this.countDownTimer.update(t, dt);
     }
@@ -179,6 +192,9 @@ export class Game {
       this.timeElapsed += dt;
       this.checkRefill();
       this.checkIsOver();
+    }
+    if (this.AI) {
+      this.AI.update(t, dt);
     }
   }
 }

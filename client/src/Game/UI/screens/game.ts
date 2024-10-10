@@ -1,10 +1,18 @@
 import { UI } from "..";
 import { DEFAULT_BUTTON_THEME } from "../../config";
+import { Game } from "../../Game";
 import { Debug } from "../../utils";
 import { Button } from "../button";
+import { InGameUI } from "../inGameUI";
 
-export function inSoloGameButtons(ctx: CanvasRenderingContext2D, ui: UI) {
+export function inSoloGameButtons(
+  ctx: CanvasRenderingContext2D,
+  ui: UI,
+  game: Game,
+) {
+  const gameUi = new InGameUI({ game, ui });
   return [
+    gameUi,
     new Button({
       position: {
         x: 0 + ctx.canvas.getBoundingClientRect().width / 2,
@@ -14,10 +22,10 @@ export function inSoloGameButtons(ctx: CanvasRenderingContext2D, ui: UI) {
       ...DEFAULT_BUTTON_THEME,
       text: "Start game",
       padding: 10,
-      disabled: ui.game?.isStarted,
+      disabled: game.isStarted,
       fontSize: "10px",
       onClick: (btn) => {
-        ui.game?.startGame();
+        game.startGame();
         btn.disable();
       },
     }),
@@ -28,19 +36,19 @@ export function inSoloGameButtons(ctx: CanvasRenderingContext2D, ui: UI) {
       },
       ctx,
       ...DEFAULT_BUTTON_THEME,
-      text: ui.game?.isPaused ? "Unpause" : "Pause",
+      text: game.isPaused ? "Unpause" : "Pause",
       padding: 10,
-      disabled: ui.game?.isPaused,
+      disabled: game.isPaused,
       fontSize: "10px",
       onClick: (btn) => {
-        ui.game?.setPause(!ui.game.isPaused);
-        btn.setText(ui.game?.isPaused ? "Unpause" : "Pause");
+        game.setPause(!game.isPaused);
+        btn.setText(game.isPaused ? "Unpause" : "Pause");
       },
     }),
     new Button({
       position: {
         x: 0 + ctx.canvas.getBoundingClientRect().width / 2,
-        y: 200,
+        y: 220,
       },
       ctx,
       ...DEFAULT_BUTTON_THEME,
@@ -49,7 +57,7 @@ export function inSoloGameButtons(ctx: CanvasRenderingContext2D, ui: UI) {
       fontSize: "10px",
       onClick: () => {
         ui.setCurrentScreen("main_menu");
-        ui.game?.reset();
+        game.reset();
       },
     }),
   ];

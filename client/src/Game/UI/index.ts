@@ -1,6 +1,7 @@
 import { FONT, FontWeight } from "../assets/fonts/fonts";
 import { DEFAULT_FONT_SIZE } from "../config";
 import { Game } from "../Game";
+import { initGameScreens } from "../screens";
 import { Coords, InteractableEntity } from "../sharedEntities";
 import { BoardUI } from "./boardUI";
 
@@ -28,6 +29,8 @@ export class UI {
     this.ctx = ctx;
   }
 
+  private beforeScreenChange() {}
+
   setCurrentScreen(key: string) {
     if (!this.screens.has(key)) {
       console.warn("No screen with name " + key + " found");
@@ -36,7 +39,7 @@ export class UI {
     const screen = this.screens.get(key);
     this.currentScreen = screen!.screenName;
     this.currentElements = screen!.elements;
-    if (key === "game") {
+    if (key.includes("game")) {
       this.initUIBoards();
     }
   }
@@ -113,7 +116,7 @@ export class UI {
   }
 
   update(t: number, dt: number) {
-    if (this.currentScreen === "game") {
+    if (this.currentScreen.includes("game")) {
       this.p1BoardUI?.update(t, dt);
       this.p2BoardUI?.update(t, dt);
     }
@@ -128,7 +131,15 @@ export class UI {
   }
 
   draw() {
-    if (this.currentScreen === "game") {
+    if (this.game?.isOver && this.game.winner) {
+      this.ctx.fillText(
+        "Winner is " + this.game.winner,
+        this.ctx.canvas.getBoundingClientRect().width / 2,
+        250,
+      );
+    }
+
+    if (this.currentScreen.includes("game")) {
       this.drawGame();
     }
     for (let i = 0; i < this.currentElements.length; i++) {

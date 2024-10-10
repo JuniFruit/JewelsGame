@@ -26,6 +26,10 @@ export class HealthBar extends InteractableEntity {
     this.readjustBar();
   }
 
+  reset() {
+    this.readjustBar();
+  }
+
   private readjustBar() {
     this.size.width = this.initialSize.width * (this.board.health * 0.01);
   }

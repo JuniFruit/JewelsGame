@@ -1,20 +1,21 @@
 import { DEFAULT_BUTTON_THEME } from "./config";
-import { Game } from "./Game";
 import { ScreenLayout, UI } from "./UI";
 import { Button } from "./UI/button";
 import { Debug } from "./utils";
 
 export function initGameScreens(
   ui: UI,
-  game: Game,
   ctx: CanvasRenderingContext2D,
   debugInstance?: Debug,
 ) {
   const screens: ScreenLayout[] = [
     {
-      screenName: "game",
+      screenName: "solo_game",
       background: "",
-      elements: [...(debugInstance ? debugButtons(ctx, debugInstance!) : [])],
+      elements: [
+        ...(debugInstance ? debugButtons(ctx, debugInstance!) : []),
+        ...inSoloGameButtons(ctx, ui),
+      ],
     },
     {
       screenName: "main_menu",
@@ -26,6 +27,58 @@ export function initGameScreens(
   screens.forEach((s) => {
     ui.addScreen(s.screenName, s);
   });
+}
+
+function inSoloGameButtons(ctx: CanvasRenderingContext2D, ui: UI) {
+  return [
+    new Button({
+      position: {
+        x: 0 + ctx.canvas.getBoundingClientRect().width / 2,
+        y: 150,
+      },
+      ctx,
+      ...DEFAULT_BUTTON_THEME,
+      text: "Start game",
+      padding: 10,
+      disabled: ui.game?.isStarted,
+      fontSize: "10px",
+      onClick: (btn) => {
+        ui.game?.startGame();
+        btn.disable();
+      },
+    }),
+    new Button({
+      position: {
+        x: 0 + ctx.canvas.getBoundingClientRect().width / 2,
+        y: 180,
+      },
+      ctx,
+      ...DEFAULT_BUTTON_THEME,
+      text: ui.game?.isPaused ? "Unpause" : "Pause",
+      padding: 10,
+      disabled: ui.game?.isPaused,
+      fontSize: "10px",
+      onClick: (btn) => {
+        ui.game?.setPause(!ui.game.isPaused);
+        btn.setText(ui.game?.isPaused ? "Unpause" : "Pause");
+      },
+    }),
+    new Button({
+      position: {
+        x: 0 + ctx.canvas.getBoundingClientRect().width / 2,
+        y: 200,
+      },
+      ctx,
+      ...DEFAULT_BUTTON_THEME,
+      text: "Quit",
+      padding: 10,
+      fontSize: "10px",
+      onClick: () => {
+        ui.setCurrentScreen("main_menu");
+        ui.game?.reset();
+      },
+    }),
+  ];
 }
 
 function mainMenuButtons(ctx: CanvasRenderingContext2D, ui: UI) {
@@ -41,7 +94,7 @@ function mainMenuButtons(ctx: CanvasRenderingContext2D, ui: UI) {
       text: "Solo game",
       padding: 10,
       fontSize: "20px",
-      onClick: () => ui.setCurrentScreen("game"),
+      onClick: () => ui.setCurrentScreen("solo_game"),
     }),
     new Button({
       position: {

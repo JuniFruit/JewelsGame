@@ -14,7 +14,7 @@ export type ButtonProps = Omit<BaseEntityProps, "type" | "size"> & {
   disabled?: boolean;
   size?: Size;
   ctx: CanvasRenderingContext2D;
-  onClick?: () => void;
+  onClick?: (btn: Button) => void;
   text?: string;
   icon?: string;
   bgColor?: string;
@@ -35,7 +35,7 @@ export class Button extends InteractableEntity {
   padding: number;
   textPos: Coords = { x: 0, y: 0 };
   isAnimating = false;
-  onClickCb: (() => void) | undefined;
+  onClickCb: ((btn: Button) => void) | undefined;
   textMeasure: TextMetrics | undefined;
   textHeight = 0;
   textWidth = 0;
@@ -88,12 +88,25 @@ export class Button extends InteractableEntity {
       this.calculateSize();
     }
 
-    if (padding) {
-      this.size.height = this.size.height + padding;
-      this.size.width = this.size.width + padding;
-    }
     this.calculateTextPos();
     this.bgHoverColor = bgHoverColor || setTransparency(this.bgColor, 50);
+  }
+
+  disable() {
+    this.bgHoverColor = setTransparency(this.bgColor, 10);
+    this.disabled = true;
+  }
+
+  setText(text: string) {
+    this.text = text;
+    this.calculateText();
+    this.calculateSize();
+    this.calculateTextPos();
+  }
+
+  activate() {
+    this.disabled = false;
+    this.bgHoverColor = setTransparency(this.bgColor, 50);
   }
 
   private calculateText() {
@@ -115,18 +128,24 @@ export class Button extends InteractableEntity {
     this.size.height =
       this.textMeasure.fontBoundingBoxDescent +
       this.textMeasure.fontBoundingBoxAscent;
+    if (this.padding) {
+      this.size.height = this.size.height + this.padding;
+      this.size.width = this.size.width + this.padding;
+    }
   }
 
   mouseDown(mousePos: Coords): void {
+    if (this.disabled) return;
     super.mouseDown(mousePos);
     this.position.y += 1;
     this.calculateTextPos();
   }
 
   mouseUp(mousePos: Coords): void {
+    if (this.disabled) return;
     super.mouseUp(mousePos);
     if (this.onClickCb) {
-      this.onClickCb();
+      this.onClickCb(this);
     } else {
       console.warn(this, "No valid click callback");
     }
@@ -159,6 +178,9 @@ export class Button extends InteractableEntity {
       this.ctx.fillStyle = this.bgHoverColor;
     } else {
       this.ctx.fillStyle = this.bgColor;
+    }
+    if (this.disabled) {
+      this.ctx.fillStyle = "grey";
     }
     this.ctx.fillRect(
       this.position.x,

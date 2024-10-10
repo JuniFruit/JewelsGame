@@ -33,7 +33,7 @@ export async function init(canvas: HTMLCanvasElement) {
   ui.game = game;
 
   const cleanInputs = initInputs(canvas, game, ui, debugInstance);
-  initGameScreens(ui, game, context, debugInstance);
+  initGameScreens(ui, context, debugInstance);
   ui.setCurrentScreen("main_menu");
 
   // start gameLoop

@@ -569,6 +569,7 @@ export class Board extends BaseEntity {
   private effectKeys: string[] = []; // normalization for effects
   // states
   isFalling = false;
+  isNewBoard = true;
   isCastingSpell = false;
   isReadyToRefill = false;
   isShaking = false;
@@ -865,19 +866,16 @@ export class Board extends BaseEntity {
     return result;
   }
 
-  isSolvable(layout?: number[]) {
-    const l = layout || this.getLayout();
-    let s = l.join("");
-    const len = s.length;
-
-    for (let i = this.cols - 1; i < len; i += this.cols) {
-      s = s.slice(0, i + 1) + "A" + s.slice(i + 1);
-    }
-    const result =
-      /(\d)(\1(\d|.{6}|.{9})|(\d|.{6}|.{9})\1|.{7}\1(.|.{9})|(.|.{9})\1.{7}|(.{7,9}|.{17})\1.{8}|.{8}\1(.{7,9}|.{17}))\1/.test(
-        s,
-      );
-    return result;
+  reset() {
+    this.health = 100;
+    this.spellsToCast = [];
+    this.jewels = [];
+    this.isFalling = false;
+    this.isReadyToRefill = false;
+    this.UI?.reset();
+    this.effects = {};
+    this.effectKeys = [];
+    this.isNewBoard = true;
   }
 
   createSpell(jewel: Jewel) {
@@ -1171,7 +1169,9 @@ export class Board extends BaseEntity {
     this.indicesToFall = this.indicesToFall.filter((item) => item !== -1);
     if (!this.indicesToFall.length) {
       this.isFalling = false;
-      this.removeOrMergeMatches();
+      if (!this.isNewBoard) {
+        this.removeOrMergeMatches();
+      }
     }
   }
 
@@ -1195,7 +1195,6 @@ export class Board extends BaseEntity {
   }
 
   update(t: number, dt: number) {
-    this.t = t;
     if (this.currentSwapping && !this.currentSwapping.isSwapping) {
       this.currentSwapping = undefined;
       this.removeOrMergeMatches();

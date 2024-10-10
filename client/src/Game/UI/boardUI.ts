@@ -40,6 +40,14 @@ export class BoardUI extends InteractableEntity {
     this.healthBar = this.initHealthBar();
   }
 
+  reset() {
+    this.animations = [];
+    this.healthBar.reset();
+    this.resetMouseStates();
+    this.resetDragging();
+    this.resetSwappingIndices();
+  }
+
   private initHealthBar() {
     const margin = 30;
     const height = 40;

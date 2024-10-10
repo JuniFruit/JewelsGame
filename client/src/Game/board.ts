@@ -599,11 +599,17 @@ export class Board extends BaseEntity {
 
   applyDamage(val: number) {
     this.health -= val;
+    if (this.health <= 0) {
+      this.health = 0;
+    }
     this.UI?.healthBar?.applyDamage(val);
   }
 
   applyHeal(val: number) {
     this.health += val;
+    if (this.health >= 100) {
+      this.health = 100;
+    }
     this.UI?.healthBar?.applyHeal(val);
   }
 

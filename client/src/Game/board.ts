@@ -567,7 +567,7 @@ export class Board extends BaseEntity {
   UI: BoardUI | undefined;
   private indicesToFall: number[] = [];
   private currentSwapping: Jewel | undefined;
-  private effectKeys: string[] = []; // normalization for effects
+  effectKeys: string[] = []; // normalization for effects
   // states
   isFalling = false;
   isNewBoard = true;
@@ -625,13 +625,10 @@ export class Board extends BaseEntity {
             activeTime: 5,
             effectType: "stun",
             board: this,
+            animKey: "stunEffect",
+            animPos: this.getBoardCenter(),
+            animSize: { width: 50, height: 50 },
           });
-        anim = createAnimationWithSprite(
-          this.getBoardCenter(),
-          "stunEffect",
-          { width: 50, height: 50 },
-          effect.timer.time,
-        );
         break;
       case JEWEL_SPELL_TYPE.POISON:
         effect =
@@ -640,13 +637,10 @@ export class Board extends BaseEntity {
             activeTime: 5,
             effectType: "poison",
             board: this,
+            animKey: "poisonEffect",
+            animSize: { width: 50, height: 50 },
+            animPos: this.getBoardCenter(),
           });
-        anim = createAnimationWithSprite(
-          this.getBoardCenter(),
-          "poisonEffect",
-          { width: 50, height: 50 },
-          effect.timer.time,
-        );
         break;
       case JEWEL_SPELL_TYPE.SHIELD:
         effect =
@@ -655,13 +649,10 @@ export class Board extends BaseEntity {
             activeTime: 2,
             effectType: "shield",
             board: this,
+            animSize: { width: 50, height: 50 },
+            animKey: "shieldEffect",
+            animPos: this.getBoardCenter(),
           });
-        anim = createAnimationWithSprite(
-          this.getBoardCenter(),
-          "shieldEffect",
-          { width: 50, height: 50 },
-          effect.timer.time,
-        );
         break;
 
       default:
@@ -715,7 +706,7 @@ export class Board extends BaseEntity {
 
     while (queue.length) {
       const curr = queue.pop();
-      if (!curr) continue;
+      if (curr === undefined) continue;
       for (let neighborInd of this.getNeighorIndices(curr)) {
         const jewel = this.jewels[neighborInd];
         if (
@@ -1020,6 +1011,7 @@ export class Board extends BaseEntity {
     if (ind1Col === ind2Col && rowDelta > 1) return false;
     if (ind1Row === ind2Row && colDelta > 1) return false;
     this.swapJewels(ind1, ind2);
+
     const matches1 = this.getMatches(ind1).filter(
       (ind) => !this.isCollapsingUnder(ind),
     );

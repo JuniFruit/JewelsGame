@@ -15,7 +15,7 @@ export class ExplosionSpell extends Spell {
       this.position,
       "jewelRemove_2",
       { width: 50, height: 50 },
-      1,
+      0.2,
     );
   }
 
@@ -28,13 +28,7 @@ export class ExplosionSpell extends Spell {
   protected stopCasting(): void {
     super.stopCasting();
     const indices = this.board.getNeighorIndices(this.originInd);
-
-    indices.forEach((ind) => {
-      const jewel = this.board.jewels[ind];
-      if (jewel.isSelectable()) {
-        jewel.remove();
-      }
-    });
+    this.board.removeLine([...indices, this.originInd]);
   }
 
   update(t: number, dt: number): void {

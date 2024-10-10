@@ -202,6 +202,10 @@ export class BoardUI extends InteractableEntity {
     for (let spell of this.board.spellsToCast) {
       spell.draw(ctx);
     }
+
+    for (let effectKey of this.board.effectKeys) {
+      this.board.effects[effectKey].draw(ctx);
+    }
   }
 
   draw(ctx: CanvasRenderingContext2D) {

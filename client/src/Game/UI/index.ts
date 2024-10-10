@@ -1,6 +1,7 @@
 import { FONT, FontWeight } from "../assets/fonts/fonts";
 import { DEFAULT_FONT_SIZE } from "../config";
 import { Coords, InteractableEntity } from "../sharedEntities";
+import { Button } from "./button";
 import { ScreenLayout } from "./screens";
 
 export class UI {
@@ -58,6 +59,10 @@ export class UI {
     if (this.currentHoveredElement) {
       this.currentHoveredElement.mouseUp(mousePos);
     }
+  }
+
+  getElementByText(val: string) {
+    return this.currentElements.find((item) => (item as Button).text === val);
   }
 
   mouseOut(mousePos: Coords) {

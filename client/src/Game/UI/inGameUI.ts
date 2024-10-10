@@ -2,6 +2,7 @@ import { UI } from ".";
 import { Game } from "../Game";
 import { BaseEntityProps, Coords, InteractableEntity } from "../sharedEntities";
 import { BoardUI } from "./boardUI";
+import { Button } from "./button";
 
 export type GameUiProps = Omit<
   BaseEntityProps,
@@ -39,6 +40,9 @@ export class InGameUI extends InteractableEntity {
   update(t: number, dt: number) {
     this.p1BoardUI.update(t, dt);
     this.p2BoardUI.update(t, dt);
+    if (this.game.isOver) {
+      this.onGameOver();
+    }
   }
 
   checkIsHovered(pos: Coords) {
@@ -70,14 +74,32 @@ export class InGameUI extends InteractableEntity {
     this.p2BoardUI.drawAnimations(ctx);
   }
 
+  private onGameOver() {
+    const startBtn = this.ui.getElementByText("Start game") as Button;
+    if (startBtn) {
+      startBtn.activate();
+    }
+  }
+
   draw(ctx: CanvasRenderingContext2D) {
     this.drawGame(ctx);
+    if (
+      !this.game.isStarted &&
+      !this.game.isOver &&
+      this.game.countDownTimer.isGoing
+    ) {
+      ctx.fillText(
+        "Game starts in: " + Math.trunc(this.game.countDownTimer.timeLeft + 1),
+        ctx.canvas.getBoundingClientRect().width / 2,
+        270,
+      );
+    }
 
     if (this.game.isOver && this.game.winner) {
       ctx.fillText(
         "Winner is " + this.game.winner,
         ctx.canvas.getBoundingClientRect().width / 2,
-        250,
+        270,
       );
     }
   }

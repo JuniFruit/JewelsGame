@@ -115,15 +115,18 @@ export class Game {
 
   isSolvable(layout: number[]) {
     const l = layout;
-    let s = l.join("");
+    const s = l.join("");
+    let newS = "";
+    let prevInd = 0;
     const len = s.length;
 
-    for (let i = this.cols - 1; i < len; i += this.cols) {
-      s = s.slice(0, i + 1) + "A" + s.slice(i + 1);
+    for (let i = this.cols; i < len; i += this.cols) {
+      newS += s.slice(prevInd, i + 1) + "A";
+      prevInd = i;
     }
     const result =
       /(\d)(\1(\d|.{6}|.{9})|(\d|.{6}|.{9})\1|.{7}\1(.|.{9})|(.|.{9})\1.{7}|(.{7,9}|.{17})\1.{8}|.{8}\1(.{7,9}|.{17}))\1/.test(
-        s,
+        newS,
       );
     return result;
   }
@@ -159,7 +162,7 @@ export class Game {
     }
   }
 
-  private startBoards() {
+  startBoards() {
     this.p1Board.isNewBoard = false;
     this.p2Board.isNewBoard = false;
     this.p1Board.removeOrMergeMatches();
@@ -176,7 +179,7 @@ export class Game {
   }
 
   update(t: number, dt: number) {
-    if (this.isPaused || this.isOver) return;
+    if (this.isPaused) return;
 
     if (!this.isStarted && !this.countDownTimer.isEnded) {
       this.countDownTimer.update(t, dt);

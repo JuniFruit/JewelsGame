@@ -157,9 +157,9 @@ export class Debug {
     this.canvasH = height;
     this.canvasW = width;
     this.debugLayout = [
-      1, 6, 6, 6, 5, 6, 5, 4, 1, 3, 4, 5, 6, 5, 4, 10, 2, 1, 5, 6, 5, 3, 9, 2,
-      1, 1, 5, 4, 5, 3, 4, 2, 4, 3, 5, 5, 3, 5, 3, 3, 5, 1, 3, 5, 4, 4, 3, 2, 5,
-      5, 2, 3, 3, 1, 4, 5, 1, 4, 6, 2, 4, 5, 4, 8,
+      5, 1, 6, 6, 5, 6, 5, 4, 1, 3, 4, 5, 6, 5, 4, 10, 1, 6, 5, 6, 5, 3, 9, 2,
+      3, 1, 5, 4, 5, 3, 4, 2, 4, 3, 5, 5, 3, 5, 3, 3, 5, 1, 3, 5, 4, 4, 3, 2, 5,
+      5, 2, 3, 3, 1, 4, 5, 1, 4, 6, 12, 4, 6, 6, 8,
     ];
   }
 
@@ -189,6 +189,8 @@ export class Debug {
       : [...this.debugLayout];
     this.game.setBoard(layout, "p1");
     this.game.setBoard(layout, "p2");
+    this.game.startBoards();
+    this.game.isStarted = true;
   }
 
   update(secondsPassed: number, timePassed: number) {
@@ -251,22 +253,22 @@ export class Debug {
     // FPS
     this.ctx.fillText("fps: " + this.fps, 10, 20);
 
-    // Mouse coords
-    this.ctx.fillText("mouseX: " + this.mouseX, 10, 35);
-    this.ctx.fillText("mouseY: " + this.mouseY, 10, 50);
-
-    // Time
-    this.ctx.fillText("timePassed: " + this.timePassed, 10, 65);
-    this.ctx.fillText("frameTime: " + this.secondsPassed, 10, 80);
-
-    // Board states
-    this.ctx.fillText("isFalling: " + this.game.p1Board.isFalling, 10, 110);
-    this.ctx.fillText(
-      "isReadyToFill: " + this.game.p1Board.isReadyToRefill,
-      10,
-      125,
-    );
-    this.ctx.fillText("isAIenabled: " + !!this.game.AI, 10, 145);
+    // // Mouse coords
+    // this.ctx.fillText("mouseX: " + this.mouseX, 10, 35);
+    // this.ctx.fillText("mouseY: " + this.mouseY, 10, 50);
+    //
+    // // Time
+    // this.ctx.fillText("timePassed: " + this.timePassed, 10, 65);
+    // this.ctx.fillText("frameTime: " + this.secondsPassed, 10, 80);
+    //
+    // // Board states
+    // this.ctx.fillText("isFalling: " + this.game.p1Board.isFalling, 10, 110);
+    // this.ctx.fillText(
+    //   "isReadyToFill: " + this.game.p1Board.isReadyToRefill,
+    //   10,
+    //   125,
+    // );
+    // this.ctx.fillText("isAIenabled: " + !!this.game.AI, 10, 145);
   }
 }
 

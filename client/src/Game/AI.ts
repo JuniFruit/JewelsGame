@@ -1,7 +1,6 @@
 import { Board } from "./board";
 import { Game } from "./Game";
 import { Timer } from "./sharedEntities";
-import { pickRnd } from "./utils";
 
 export type AIProps = {
   game: Game;
@@ -12,7 +11,7 @@ export class AI {
   game: Game;
   player: "p1" | "p2";
   private myBoard: Board;
-  moveTimer = new Timer({ time: Infinity, pulseBound: 0.3 });
+  moveTimer = new Timer({ time: Infinity, pulseBound: 5 });
   constructor({ game, player }: AIProps) {
     this.game = game;
     this.player = player;
@@ -31,18 +30,14 @@ export class AI {
     this.moveTimer.reset();
   }
 
-  private findPotentialMove() {
-    const dirs = [1, -1, this.myBoard.cols, -this.myBoard.cols];
-    const rndDir = pickRnd(0, dirs.length - 1);
-    const ind1 = pickRnd(0, this.myBoard.jewels.length - 1);
-    const ind2 = ind1 + rndDir;
-
-    return { ind1, ind2 };
-  }
-
+  // TODO: make different alg
   private makeMove() {
-    const { ind1, ind2 } = this.findPotentialMove();
-    this.myBoard.attemptSwap(ind1, ind2);
+    for (let i = 0; i < this.myBoard.jewels.length; i++) {
+      for (let j = 0; j < this.myBoard.jewels.length; j++) {
+        const success = this.myBoard.attemptSwap(i, j);
+        if (success) return;
+      }
+    }
   }
 
   update(t: number, dt: number) {

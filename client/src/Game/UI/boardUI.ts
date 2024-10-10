@@ -208,6 +208,25 @@ export class BoardUI extends InteractableEntity {
     }
   }
 
+  private drawEffectInfo(ctx: CanvasRenderingContext2D) {
+    const prevStyle = ctx.font;
+    ctx.font = "bold 15px Arial";
+    for (let i = 0; i < this.board.effectKeys.length; i++) {
+      const effectKey = this.board.effectKeys[i];
+      const effect = this.board.effects[effectKey];
+      if (effect.isActive) {
+        ctx.fillText(
+          effect.effectType,
+          this.board.player === "p1"
+            ? this.board.position.x + this.board.size.width + 20
+            : this.board.position.x - 60,
+          i * 20 + 100,
+        );
+      }
+    }
+    ctx.font = prevStyle;
+  }
+
   draw(ctx: CanvasRenderingContext2D) {
     let draggingEnt: Jewel | undefined;
     let convertingEnt: Jewel | undefined;
@@ -219,6 +238,7 @@ export class BoardUI extends InteractableEntity {
       this.size.height,
     );
     this.healthBar.draw(ctx);
+    this.drawEffectInfo(ctx);
     for (let jewelEnt of this.board.jewels) {
       if (jewelEnt.isDragging) {
         draggingEnt = jewelEnt;

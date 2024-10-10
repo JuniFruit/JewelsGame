@@ -184,7 +184,7 @@ export class Game {
     if (!this.isStarted && !this.countDownTimer.isEnded) {
       this.countDownTimer.update(t, dt);
     }
-    if (this.countDownTimer.isEnded) {
+    if (this.countDownTimer.isEnded && !this.isStarted) {
       this.isStarted = true;
       this.startBoards();
     }

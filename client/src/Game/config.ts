@@ -3,7 +3,7 @@ import { Size } from "./sharedEntities";
 import { ButtonProps } from "./UI/button";
 
 // set debug mode, additional info and buttons will be rendered
-export const DEBUG = true;
+export const DEBUG = false;
 // cursor size bounds to check for collisions (used to check buttons collision for example)
 export const MOUSE_SIZE: Size = {
   height: 10,

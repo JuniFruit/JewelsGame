@@ -599,7 +599,12 @@ export class Board extends BaseEntity {
   }
 
   applyDamage(val: number) {
-    this.health -= val;
+    let dmg = val;
+    if (this.effects.shield?.isActive) {
+      dmg = val * 0.7;
+    }
+    console.log(dmg);
+    this.health -= dmg;
     if (this.health <= 0) {
       this.health = 0;
     }
@@ -649,10 +654,13 @@ export class Board extends BaseEntity {
             activeTime: 2,
             effectType: "shield",
             board: this,
-            animSize: { width: 50, height: 50 },
-            animKey: "shieldEffect",
-            animPos: this.getBoardCenter(),
           });
+        anim = createAnimationWithSprite(
+          this.getBoardCenter(),
+          "shieldEffect",
+          { width: 50, height: 50 },
+          2,
+        );
         break;
 
       default:

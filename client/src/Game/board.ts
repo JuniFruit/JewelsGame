@@ -603,7 +603,6 @@ export class Board extends BaseEntity {
     if (this.effects.shield?.isActive) {
       dmg = val * 0.7;
     }
-    console.log(dmg);
     this.health -= dmg;
     if (this.health <= 0) {
       this.health = 0;

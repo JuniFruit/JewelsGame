@@ -34,7 +34,20 @@ const gemSpellBaseConfig: ImageConfigBase = {
   framesMaxWidth: 16,
 };
 
+const gemSuperSpellBaseConfig: ImageConfigBase = {
+  framesPerSec: 10,
+  framesMaxWidth: 10,
+};
+
 const imageBaseConfigs: Record<ImageKey, ImageConfigBase> = {
+  gemLightGreenSuperSpell: gemSuperSpellBaseConfig,
+  gemTurquoiseSuperSpell: gemSuperSpellBaseConfig,
+  gemGoldSuperSpell: gemSuperSpellBaseConfig,
+  gemDarkBlueSuperSpell: gemSuperSpellBaseConfig,
+  gemPurpleSuperSpell: gemSuperSpellBaseConfig,
+  gemBlueSuperSpell: gemSuperSpellBaseConfig,
+  gemRedSuperSpell: gemSuperSpellBaseConfig,
+  gemLiliacSuperSpell: gemSuperSpellBaseConfig,
   potionsSheet: {
     framesMaxWidth: 5,
     framesMaxHeight: 2,
@@ -181,6 +194,25 @@ export const imageConfigs: Record<string, ImageConfig> = {
   [JEWEL_SPELL_TYPE.EXPLOSION]: {
     imageName: "gemDarkBlueSpell",
   },
+  [JEWEL_TYPE.FATIGUE]: {
+    imageName: "gemBlueSuperSpell",
+  },
+  [JEWEL_SPELL_TYPE.DRILL_STRIKE]: {
+    imageName: "gemRedSuperSpell",
+  },
+  [JEWEL_SPELL_TYPE.BASHING_STRIKE]: {
+    imageName: "gemGoldSuperSpell",
+  },
+  [JEWEL_SPELL_TYPE.LITURGY]: {
+    imageName: "gemLightGreenSuperSpell",
+  },
+  [JEWEL_SPELL_TYPE.CONTAMINATION]: {
+    imageName: "gemPurpleSuperSpell",
+  },
+  [JEWEL_SPELL_TYPE.MINEFIELD]: {
+    imageName: "gemDarkBlueSuperSpell",
+  },
+
   [`jewelRemove_${JEWEL_TYPE.RED}`]: {
     ...jewelRemoveBaseConfig,
     imageName: "expl_big",

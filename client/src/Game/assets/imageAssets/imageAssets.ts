@@ -30,8 +30,24 @@ import greenEffectSheet from "./Green Effect Bullet Impact Explosion 32x32.png";
 import purpleEffectSheet from "./Purple Effect Bullet Impact Explosion 32x32.png";
 import redEffectSheet from "./Red Effect Bullet Impact Explosion 32x32.png";
 import yellowEffectSheet from "./Yellow Effect Bullet Impact Explosion 32x32.png";
+import gemLightGreenSuperSpell from "./GEMS/LIGHTGREEN_SUPERSPELL.png";
+import gemLiliacSuperSpell from "./GEMS/LILIAC_SUPERSPELL.png";
+import gemRedSuperSpell from "./GEMS/RED_SUPERSPELL.png";
+import gemPurpleSuperSpell from "./GEMS/PURPLE_SUPERSPELL.png";
+import gemBlueSuperSpell from "./GEMS/BLUE_SUPERSPELL.png";
+import gemDarkBlueSuperSpell from "./GEMS/DARKBLUE_SUPERSPELL.png";
+import gemGoldSuperSpell from "./GEMS/GOLD_SUPERSPELL.png";
+import gemTurquoiseSuperSpell from "./GEMS/TURQUISE_SUPERSPELL.png";
 
 export const images = {
+  gemLiliacSuperSpell,
+  gemRedSuperSpell,
+  gemPurpleSuperSpell,
+  gemBlueSuperSpell,
+  gemDarkBlueSuperSpell,
+  gemGoldSuperSpell,
+  gemLightGreenSuperSpell,
+  gemTurquoiseSuperSpell,
   assetSheet_1,
   potionsSheet,
   fireLoop,

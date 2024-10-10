@@ -58,6 +58,12 @@ export const JEWEL_SPELL_TYPE = {
   SHIELD: 10,
   POISON: 11,
   EXPLOSION: 12,
+  FATIGUE: 13,
+  DRILL_STRIKE: 14,
+  BASHING_STRIKE: 15,
+  LITURGY: 16,
+  CONTAMINATION: 17,
+  MINEFIELD: 18,
 };
 
 export const JEWEL_SPELL_CONVERSION: Record<string, JewelSpellConversion> = {
@@ -67,6 +73,12 @@ export const JEWEL_SPELL_CONVERSION: Record<string, JewelSpellConversion> = {
   [JEWEL_SPELL_TYPE.SHIELD]: { matchesToGet: 4, parentType: 4 },
   [JEWEL_SPELL_TYPE.POISON]: { matchesToGet: 4, parentType: 5 },
   [JEWEL_SPELL_TYPE.EXPLOSION]: { matchesToGet: 4, parentType: 6 },
+  [JEWEL_SPELL_TYPE.FATIGUE]: { matchesToGet: 6, parentType: 1 },
+  [JEWEL_SPELL_TYPE.DRILL_STRIKE]: { matchesToGet: 6, parentType: 2 },
+  [JEWEL_SPELL_TYPE.BASHING_STRIKE]: { matchesToGet: 6, parentType: 3 },
+  [JEWEL_SPELL_TYPE.LITURGY]: { matchesToGet: 6, parentType: 4 },
+  [JEWEL_SPELL_TYPE.CONTAMINATION]: { matchesToGet: 6, parentType: 5 },
+  [JEWEL_SPELL_TYPE.MINEFIELD]: { matchesToGet: 6, parentType: 6 },
 };
 
 // types of jewels existing in the game

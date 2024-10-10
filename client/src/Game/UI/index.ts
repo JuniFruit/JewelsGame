@@ -1,15 +1,9 @@
 import { FONT, FontWeight } from "../assets/fonts/fonts";
 import { DEFAULT_FONT_SIZE } from "../config";
 import { Game } from "../Game";
-import { initGameScreens } from "../screens";
 import { Coords, InteractableEntity } from "../sharedEntities";
 import { BoardUI } from "./boardUI";
-
-export type ScreenLayout = {
-  screenName: string;
-  background: string;
-  elements: InteractableEntity[];
-};
+import { ScreenLayout } from "./screens";
 
 export class UI {
   screens: Map<string, ScreenLayout> = new Map();
@@ -28,8 +22,6 @@ export class UI {
   constructor(ctx: CanvasRenderingContext2D) {
     this.ctx = ctx;
   }
-
-  private beforeScreenChange() {}
 
   setCurrentScreen(key: string) {
     if (!this.screens.has(key)) {

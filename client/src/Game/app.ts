@@ -3,9 +3,9 @@ import { DEBUG } from "./config";
 import { Game } from "./Game";
 import { initAllImages } from "./animation/config";
 import { initInputs } from "./inputs";
-import { initGameScreens } from "./screens";
 import { initFonts, UI } from "./UI";
 import { Debug } from "./utils";
+import { initGameScreens } from "./UI/screens";
 
 let secondsPassed = 0;
 let oldTimeStamp = 0;

@@ -38,8 +38,6 @@ export class Sprite extends BaseEntity {
   framesElapsed = 0;
   frameWidth = 0; // width of a single frame
   frameHeight = 0; // height of a single frame
-  resized: Size = { width: 0, height: 0 }; // resized for cell size
-  private initialResized: Size = { width: 0, height: 0 }; // resized for cell size before rescale
   scale: number; // current scale
   initialScale: number;
   private image: HTMLImageElement;
@@ -64,7 +62,7 @@ export class Sprite extends BaseEntity {
     scale = 1,
     isLooped = true,
   }: SpriteProps) {
-    super({ position, size, type: "sprite" });
+    super({ position, size: { ...size }, type: "sprite" });
     this.angle = angle;
     this.framesMaxHeight = framesMaxHeight;
     this.framesMaxWidth = framesMaxWidth;
@@ -83,10 +81,9 @@ export class Sprite extends BaseEntity {
     this.frameStopRow = frameStopRow ? frameStopRow - 1 : framesMaxHeight - 1;
     this.initialScale = scale;
     this.scale = scale;
-    this.resized.height = (size.height / this.frameHeight) * this.frameHeight;
-    this.resized.width = (size.width / this.frameWidth) * this.frameWidth;
-    this.initialResized.height = this.resized.height;
-    this.initialResized.width = this.resized.width;
+    this.size.width = size.width || this.frameWidth;
+    this.size.height = size.height || this.frameHeight;
+    this.initialSize = { ...this.size };
     this.isStatic =
       this.frameStopRow === this.frameStartRow &&
       this.frameStopCol === this.frameStartCol;
@@ -94,12 +91,10 @@ export class Sprite extends BaseEntity {
   }
 
   private rescaleAndAdjust() {
-    this.resized.height =
-      (this.size.height / this.frameHeight) * this.frameHeight * this.scale;
-    this.resized.width =
-      (this.size.width / this.frameWidth) * this.frameWidth * this.scale;
-    const dW = this.resized.width - this.initialResized.width;
-    const dH = this.resized.height - this.initialResized.height;
+    this.size.height = this.initialSize.height * this.scale;
+    this.size.width = this.initialSize.width * this.scale;
+    const dW = this.size.width - this.initialSize.width;
+    const dH = this.size.height - this.initialSize.height;
     this.adjustmentVec.x = dW * 0.5;
     this.adjustmentVec.y = dH * 0.5;
   }
@@ -172,10 +167,16 @@ export class Sprite extends BaseEntity {
   draw(ctx: CanvasRenderingContext2D) {
     if (!this.image || !this.image.complete) return;
     const prevMatrix = ctx.getTransform();
-    ctx.translate(this.position.x, this.position.y);
+    ctx.translate(
+      this.position.x + this.initialSize.width * 0.5,
+      this.position.y + this.initialSize.height * 0.5,
+    );
 
     ctx.rotate(this.angle);
-    ctx.translate(-this.position.x, -this.position.y);
+    ctx.translate(
+      -this.position.x - this.initialSize.width * 0.5,
+      -this.position.y - this.initialSize.height * 0.5,
+    );
 
     ctx.drawImage(
       this.image,
@@ -185,8 +186,15 @@ export class Sprite extends BaseEntity {
       this.frameHeight,
       this.position.x - this.adjustmentVec.x,
       this.position.y - this.adjustmentVec.y,
-      this.resized.width,
-      this.resized.height,
+      this.size.width,
+      this.size.height,
+    );
+    ctx.strokeStyle = "red";
+    ctx.strokeRect(
+      this.position.x - this.adjustmentVec.x,
+      this.position.y - this.adjustmentVec.y,
+      this.size.width,
+      this.size.height,
     );
     ctx.setTransform(prevMatrix);
   }
@@ -283,9 +291,9 @@ export function createSprite(
 ) {
   const config = getImageAndConfig(key);
   const sprite = new Sprite({
-    position,
-    size: config.size || size || { width: 0, height: 0 },
     ...config,
+    position,
+    size: size || config.size || { width: 0, height: 0 },
   });
   return sprite;
 }

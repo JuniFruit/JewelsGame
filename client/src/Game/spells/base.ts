@@ -27,7 +27,7 @@ export abstract class Spell extends BaseEntity {
     this.movingVec = new Vector({ x: 0, y: 0 });
   }
 
-  protected moveTo(pos: Coords, factor = 0) {
+  protected moveTo(pos: Coords, factor = 0, time: number = 0) {
     this.targetPosition = { ...pos };
     const { distance, angle } = getMovingProps(this.position, pos);
     const length = distance * 0.5 * factor;
@@ -37,7 +37,7 @@ export abstract class Spell extends BaseEntity {
     if (this.animation.sprite) {
       this.animation.sprite.setAngle(angle);
     }
-    this.animation.timer.setTime(distance / length);
+    this.animation.timer.setTime(time || distance / length);
     this.isMoving = true;
   }
 

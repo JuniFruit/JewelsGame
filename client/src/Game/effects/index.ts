@@ -9,16 +9,6 @@ export class StunEffect extends Effect {
 
     super.activate();
   }
-  update(t: number, dt: number): void {
-    if (!this.isActive) return;
-
-    this.timer.update(t, dt);
-    this.sprite?.update(t, dt);
-
-    if (this.timer.isEnded) {
-      this.deactivate();
-    }
-  }
 }
 
 export class PoisonEffect extends Effect {
@@ -35,17 +25,6 @@ export class PoisonEffect extends Effect {
     this.timer.onPulse = this.tickHealth;
     super.activate();
   }
-
-  update(t: number, dt: number): void {
-    if (!this.isActive) return;
-
-    this.timer.update(t, dt);
-    this.sprite?.update(t, dt);
-
-    if (this.timer.isEnded) {
-      this.deactivate();
-    }
-  }
 }
 
 export class ShieldEffect extends Effect {
@@ -58,3 +37,5 @@ export class ShieldEffect extends Effect {
     }
   }
 }
+
+export class FatigueEffect extends Effect {}

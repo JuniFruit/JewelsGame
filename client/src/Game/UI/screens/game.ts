@@ -128,5 +128,19 @@ export function debugButtons(
       fontSize: "10px",
       onClick: () => debugInstance.slowTime(),
     }),
+    new Button({
+      position: {
+        x: 550,
+        y: 115,
+      },
+      ctx,
+      ...DEFAULT_BUTTON_THEME,
+      text: "Disable AI",
+      padding: 10,
+      fontSize: "10px",
+      onClick: () => {
+        debugInstance.game.AI = undefined;
+      },
+    }),
   ];
 }

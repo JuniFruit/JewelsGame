@@ -108,6 +108,8 @@ export class Sprite extends BaseEntity {
     this.framesCurrentWidth = this.frameStartCol;
     this.framesCurrentHeight = this.frameStartRow;
     this.framesElapsed = 0;
+    this.framesTotalElapsed = 0;
+    this.prevFrame = 0;
     this.isPlaying = false;
   }
 

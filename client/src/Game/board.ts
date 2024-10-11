@@ -38,6 +38,9 @@ import { PoisonSpell } from "./spells/poison";
 import { ShieldSpell } from "./spells/shield";
 import { ExplosionSpell } from "./spells/explosion";
 import { CritStrike } from "./spells/critStrike";
+import { FatigueSpell } from "./spells/fatigue";
+import { DrillStrikeSpell } from "./spells/drillStrike";
+import { BashStrikeSpell } from "./spells/bashStrike";
 
 export type JewelProps = Omit<BaseEntityProps, "type"> & {
   jewelType: number;
@@ -172,7 +175,9 @@ export class Jewel extends InteractableEntity {
   }
 
   private setJewelSprite() {
-    this.jewelSprite = createSprite(this.position, this.jewelType, this.size);
+    this.jewelSprite = createSprite(this.position, this.jewelType, {
+      ...this.size,
+    });
     // this.hoveredSprite = createSprite(this.position, "jewelHover", this.size);
     this.jewelSprite.play();
     // this.hoveredSprite.play();
@@ -623,16 +628,19 @@ export class Board extends BaseEntity {
     let anim: Animation | undefined;
     switch (type) {
       case JEWEL_SPELL_TYPE.STUN:
-        effect =
-          this.effects.stun ||
-          new StunEffect({
-            activeTime: 5,
+        effect = this.effects.stun;
+        if (effect) {
+          effect.timer.setTime(5);
+        } else {
+          effect = new StunEffect({
+            activeTime: 2,
             effectType: "stun",
             board: this,
             animKey: "stunEffect",
-            animPos: this.getBoardCenter(),
             animSize: { width: 50, height: 50 },
+            animPos: this.getBoardCenter(),
           });
+        }
         break;
       case JEWEL_SPELL_TYPE.POISON:
         effect =
@@ -661,6 +669,33 @@ export class Board extends BaseEntity {
           2,
         );
         break;
+      case JEWEL_SPELL_TYPE.FATIGUE:
+        effect =
+          this.effects.fatigue ||
+          new PoisonEffect({
+            activeTime: 5,
+            effectType: "fatigue",
+            board: this,
+            animKey: "poisonEffect",
+            animSize: { width: 50, height: 50 },
+            animPos: this.getBoardCenter(),
+          });
+        break;
+      case JEWEL_SPELL_TYPE.BASHING_STRIKE:
+        effect = this.effects.stun;
+        if (effect) {
+          effect.timer.setTime(2);
+        } else {
+          effect = new StunEffect({
+            activeTime: 2,
+            effectType: "stun",
+            board: this,
+            animKey: "stunEffect",
+            animSize: { width: 50, height: 50 },
+            animPos: this.getBoardCenter(),
+          });
+        }
+        break;
 
       default:
         return;
@@ -672,6 +707,7 @@ export class Board extends BaseEntity {
     }
     if (!effect.isActive) {
       effect.activate();
+      console.log(effect.timer.timeLeft, effect.effectType, effect.isActive);
     }
 
     if (effect.isActive && anim) {
@@ -929,6 +965,27 @@ export class Board extends BaseEntity {
         spell = new CritStrike({
           board: this,
           spellType: spellType.toString(),
+        });
+        break;
+      case JEWEL_SPELL_TYPE.FATIGUE:
+        spell = new FatigueSpell({
+          board: this,
+          spellType: spellType.toString(),
+          position: this.getBoardCenter(),
+        });
+        break;
+      case JEWEL_SPELL_TYPE.DRILL_STRIKE:
+        spell = new DrillStrikeSpell({
+          board: this,
+          spellType: spellType.toString(),
+          position: jewel.getIndexPos(),
+        });
+        break;
+      case JEWEL_SPELL_TYPE.BASHING_STRIKE:
+        spell = new BashStrikeSpell({
+          board: this,
+          spellType: spellType.toString(),
+          position: jewel.getIndexPos(),
         });
         break;
 

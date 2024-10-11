@@ -1,4 +1,4 @@
-import { createAnimationWithSprite, createSprite, Sprite } from "../animation";
+import { createSprite, Sprite } from "../animation";
 import { Board } from "../board";
 import { Coords, Size, Timer } from "../sharedEntities";
 
@@ -7,6 +7,7 @@ export type EffectProps = {
   animPos?: Coords;
   animSize?: Size;
   animKey?: string;
+  isNegative?: boolean;
   effectType: string;
   board: Board;
 };
@@ -15,6 +16,7 @@ export abstract class Effect {
   isActive = false;
   effectType: string;
   timer: Timer;
+  isNegative: boolean;
   board: Board;
   sprite: Sprite | undefined;
   constructor({
@@ -22,13 +24,19 @@ export abstract class Effect {
     animSize,
     animPos,
     animKey = "",
+    isNegative = true,
     effectType,
     board,
   }: EffectProps) {
     this.effectType = effectType;
     this.board = board;
+    this.isNegative = isNegative;
     this.timer = new Timer({ time: activeTime });
-    this.sprite = createSprite(animPos || { x: 0, y: 0 }, animKey, animSize);
+    this.sprite = createSprite(
+      animPos || board.getBoardCenter(),
+      animKey,
+      animSize || { width: 50, height: 50 },
+    );
   }
 
   activate() {

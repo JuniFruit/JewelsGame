@@ -12,14 +12,19 @@ export type SpellProps = Omit<BaseEntityProps, "type"> & {
 
 export abstract class Spell extends BaseEntity {
   animation: Animation;
-  isCasted = false;
   isFinished = false;
   isCasting = false;
   isMoving = false;
   board: Board;
   spellType: string;
   movingVec: Vector;
-  constructor({ position, size, board, spellType, castTime = 0 }: SpellProps) {
+  constructor({
+    position,
+    size,
+    board,
+    spellType,
+    castTime = Infinity,
+  }: SpellProps) {
     super({ position, size, type: "spell" });
     this.spellType = spellType;
     this.board = board;

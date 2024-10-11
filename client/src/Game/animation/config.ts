@@ -1,5 +1,6 @@
 import { type ImageKey, images } from "../assets/imageAssets/imageAssets";
 import { JEWEL_SPELL_TYPE, JEWEL_TYPE } from "../config";
+import { LiturgyEffect } from "../effects";
 import type { Size } from "../sharedEntities";
 
 export type ImageConfig = {
@@ -280,6 +281,7 @@ export const imageConfigs: Record<string, ImageConfig> = {
     isLooped: false,
   },
   poisonEffect: {
+    framesPerSec: 15,
     imageName: "plague",
     scale: 3,
   },
@@ -289,6 +291,11 @@ export const imageConfigs: Record<string, ImageConfig> = {
   },
   critStrikeEffect: {
     imageName: "lightning",
+    scale: 2.5,
+  },
+  liturgyEffect: {
+    framesPerSec: 15,
+    imageName: "light_2",
     scale: 2.5,
   },
 };

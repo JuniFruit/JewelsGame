@@ -31,7 +31,13 @@ import { Spell } from "./spells/base";
 import { AttackProjectile } from "./spells/attackProjectile";
 import { StunSpell } from "./spells/stun";
 import { Effect } from "./effects/base";
-import { PoisonEffect, ShieldEffect, StunEffect } from "./effects";
+import {
+  FatigueEffect,
+  LiturgyEffect,
+  PoisonEffect,
+  ShieldEffect,
+  StunEffect,
+} from "./effects";
 import { VampiricSpell } from "./spells/vampiric";
 import { BoardUI } from "./UI/boardUI";
 import { PoisonSpell } from "./spells/poison";
@@ -41,6 +47,8 @@ import { CritStrike } from "./spells/critStrike";
 import { FatigueSpell } from "./spells/fatigue";
 import { DrillStrikeSpell } from "./spells/drillStrike";
 import { BashStrikeSpell } from "./spells/bashStrike";
+import { ContaminationSpell } from "./spells/contamination";
+import { MinefieldSpell } from "./spells/minefield";
 
 export type JewelProps = Omit<BaseEntityProps, "type"> & {
   jewelType: number;
@@ -641,12 +649,10 @@ export class Board extends BaseEntity {
           effect.timer.setTime(5);
         } else {
           effect = new StunEffect({
-            activeTime: 2,
+            activeTime: 5,
             effectType: "stun",
             board: this,
             animKey: "stunEffect",
-            animSize: { width: 50, height: 50 },
-            animPos: this.getBoardCenter(),
           });
         }
         break;
@@ -658,15 +664,13 @@ export class Board extends BaseEntity {
             effectType: "poison",
             board: this,
             animKey: "poisonEffect",
-            animSize: { width: 50, height: 50 },
-            animPos: this.getBoardCenter(),
           });
         break;
       case JEWEL_SPELL_TYPE.SHIELD:
         effect =
           this.effects.shield ||
           new ShieldEffect({
-            activeTime: 2,
+            activeTime: Infinity,
             effectType: "shield",
             board: this,
           });
@@ -680,13 +684,11 @@ export class Board extends BaseEntity {
       case JEWEL_SPELL_TYPE.FATIGUE:
         effect =
           this.effects.fatigue ||
-          new PoisonEffect({
+          new FatigueEffect({
             activeTime: 5,
             effectType: "fatigue",
             board: this,
             animKey: "poisonEffect",
-            animSize: { width: 50, height: 50 },
-            animPos: this.getBoardCenter(),
           });
         break;
       case JEWEL_SPELL_TYPE.BASHING_STRIKE:
@@ -699,10 +701,18 @@ export class Board extends BaseEntity {
             effectType: "stun",
             board: this,
             animKey: "stunEffect",
-            animSize: { width: 50, height: 50 },
-            animPos: this.getBoardCenter(),
           });
         }
+        break;
+      case JEWEL_SPELL_TYPE.LITURGY:
+        effect =
+          this.effects.liturgy ||
+          new LiturgyEffect({
+            activeTime: 5,
+            effectType: "liturgy",
+            board: this,
+            animKey: "liturgyEffect",
+          });
         break;
 
       default:
@@ -873,7 +883,7 @@ export class Board extends BaseEntity {
 
   private castProjectile(jewelType: number, originPos: Coords) {
     const ent = new AttackProjectile({
-      damageOnHit: 1,
+      damageOnHit: 0.5,
       board: this,
       jewelType: jewelType,
       position: originPos,
@@ -993,6 +1003,24 @@ export class Board extends BaseEntity {
           board: this,
           spellType: spellType.toString(),
           position: jewel.getIndexPos(),
+        });
+        break;
+      case JEWEL_SPELL_TYPE.LITURGY:
+        this.applyEffect(JEWEL_SPELL_TYPE.LITURGY);
+        break;
+      case JEWEL_SPELL_TYPE.CONTAMINATION:
+        spell = new ContaminationSpell({
+          board: this,
+          spellType: spellType.toString(),
+          position: jewel.getIndexPos(),
+        });
+        break;
+      case JEWEL_SPELL_TYPE.MINEFIELD:
+        spell = new MinefieldSpell({
+          board: this,
+          spellType: spellType.toString(),
+          position: jewel.getIndexPos(),
+          originInd: jewel.index,
         });
         break;
 

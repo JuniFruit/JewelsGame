@@ -215,12 +215,17 @@ export class BoardUI extends InteractableEntity {
       const effectKey = this.board.effectKeys[i];
       const effect = this.board.effects[effectKey];
       if (effect.isActive) {
-        ctx.fillText(
-          effect.effectType,
+        const y = i * 20 + 100;
+        const x =
           this.board.player === "p1"
             ? this.board.position.x + this.board.size.width + 20
-            : this.board.position.x - 60,
-          i * 20 + 100,
+            : this.board.position.x - 90;
+
+        ctx.fillText(`${effect.effectType}`, x, y);
+        ctx.fillText(
+          `T: ${Math.trunc(effect.timer.timeLeft)} ${effectKey === "shield" ? "S: " + (effect as any).stacks : ""}`,
+          x,
+          y + 20,
         );
       }
     }

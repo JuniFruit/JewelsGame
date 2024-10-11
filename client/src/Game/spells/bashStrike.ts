@@ -78,7 +78,7 @@ export class BashStrikeSpell extends Spell {
         detectCollision(
           this.position,
           this.size,
-          this.board.jewels[this.targetInd].position,
+          this.targetPosition,
           this.board.jewels[this.targetInd].size,
         )
       ) {
@@ -100,10 +100,6 @@ export class BashStrikeSpell extends Spell {
     }
   }
   draw(ctx: CanvasRenderingContext2D): void {
-    if (this.currTarget === "jewel") {
-      ctx.strokeRect(this.targetPosition.x, this.targetPosition.y, 10, 10);
-    }
-
     this.animation.draw(ctx);
   }
 }

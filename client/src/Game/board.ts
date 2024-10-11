@@ -605,6 +605,9 @@ export class Board extends BaseEntity {
 
   applyDamage(val: number) {
     let dmg = val;
+    if (this.effects.fatigue?.isActive) {
+      dmg *= 1.5;
+    }
     if (this.effects.shield?.isActive) {
       dmg = val * 0.7;
     }
@@ -616,7 +619,12 @@ export class Board extends BaseEntity {
   }
 
   applyHeal(val: number) {
-    this.health += val;
+    let heal = val;
+    if (this.effects.fatigue?.isActive) {
+      heal *= 0.5;
+    }
+
+    this.health += heal;
     if (this.health >= 100) {
       this.health = 100;
     }

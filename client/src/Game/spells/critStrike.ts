@@ -8,7 +8,7 @@ export class CritStrike extends Spell {
     super({ position: { x: 0, y: 0 }, size: { width: 0, height: 0 }, ...rest });
 
     this.animation = createAnimationWithSprite(
-      this.board.opponentBoard?.position || this.position,
+      this.board.opponentBoard?.getBoardCenter() || this.position,
       "critStrikeEffect",
       { width: 50, height: 50 },
       1,
@@ -23,7 +23,7 @@ export class CritStrike extends Spell {
 
   protected stopCasting(): void {
     super.stopCasting();
-    this.board.opponentBoard?.applyDamage(10);
+    this.board.opponentBoard?.applyDamage(100);
   }
 
   update(t: number, dt: number): void {

@@ -23,7 +23,7 @@ export class VampiricSpell extends Spell {
 
   protected stopCasting(): void {
     super.stopCasting();
-    this.board.applyHeal(5);
+    this.board.applyHeal(40);
   }
 
   update(t: number, dt: number): void {

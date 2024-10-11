@@ -22,7 +22,6 @@ export class HealthBar extends InteractableEntity {
 
   applyDamage(val: number) {
     this.latestDmg = val;
-    this.calculateTextPos(`-${this.latestDmg}`);
     this.readjustBar();
   }
 
@@ -31,7 +30,8 @@ export class HealthBar extends InteractableEntity {
   }
 
   private readjustBar() {
-    this.size.width = this.initialSize.width * (this.board.health * 0.01);
+    this.size.width = this.initialSize.width * (this.board.healthPer * 0.01);
+    this.calculateTextPos(`${this.board.health} / ${this.board.totalHealth}`);
   }
 
   applyHeal(val: number) {
@@ -79,9 +79,11 @@ export class HealthBar extends InteractableEntity {
       this.size.width,
       this.size.height,
     );
-    // if (this.isApplyingDmg) {
-    //   this.ctx.fillStyle = "black";
-    //   this.ctx.fillText(`-${this.latestDmg}`, this.textPos.x, this.textPos.y);
-    // }
+    this.ctx.fillStyle = "black";
+    this.ctx.fillText(
+      `${this.board.health} / ${this.board.totalHealth}`,
+      this.textPos.x,
+      this.textPos.y,
+    );
   }
 }

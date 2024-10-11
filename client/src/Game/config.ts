@@ -3,7 +3,7 @@ import { Size } from "./sharedEntities";
 import { ButtonProps } from "./UI/button";
 
 // set debug mode, additional info and buttons will be rendered
-export const DEBUG = true;
+export const DEBUG = false;
 // cursor size bounds to check for collisions (used to check buttons collision for example)
 export const MOUSE_SIZE: Size = {
   height: 10,
@@ -27,7 +27,7 @@ export const P1_BOARD: BoardProps = {
     y: 30,
   },
   player: "p1",
-  health: 100,
+  health: 2500,
   size: BOARD_SIZE,
   cols: BOARD_COLS,
   rows: BOARD_ROWS,
@@ -40,7 +40,7 @@ export const P2_BOARD: BoardProps = {
     y: P1_BOARD.position.y,
   },
   player: "p2",
-  health: 100,
+  health: P1_BOARD.health,
 
   size: BOARD_SIZE,
   cols: BOARD_COLS,

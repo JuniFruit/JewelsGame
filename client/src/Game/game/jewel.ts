@@ -425,7 +425,7 @@ export class Jewel extends InteractableEntity {
     this.initialPos = { ...this.targetPosition };
   }
 
-  private stopConverting() {
+  stopConverting() {
     this.isConverting = false;
     this.jewelType = this.targetJewelType;
     this.setJewelSprite();

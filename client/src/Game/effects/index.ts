@@ -13,7 +13,7 @@ export class StunEffect extends Effect {
 
 export class PoisonEffect extends Effect {
   private tickHealth = () => {
-    this.board?.applyDamage(0.5);
+    this.board?.applyDamage(15);
   };
 
   activate(): void {
@@ -69,6 +69,6 @@ export class LiturgyEffect extends Effect {
     }
   }
   private heal() {
-    this.board.applyHeal(0.5);
+    this.board.applyHeal(20);
   }
 }

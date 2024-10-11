@@ -22,7 +22,7 @@ export class DrillStrikeSpell extends Spell {
   protected stopCasting() {
     super.stopCasting();
     if (!this.board.opponentBoard) return;
-    this.board.opponentBoard.applyDamage(5);
+    this.board.opponentBoard.applyDamage(50);
   }
 
   private checkCollision() {

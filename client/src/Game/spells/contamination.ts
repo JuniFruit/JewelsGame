@@ -37,6 +37,7 @@ class Projectile extends BaseEntity {
     if (this.isHit) return;
     this.position.x += this.movingVec.x * dt;
     this.position.y += this.movingVec.y * dt;
+    this.sprite?.update(_t, dt);
     if (
       detectCollision(this.position, this.size, this.targetPosition, {
         width: 50,
@@ -71,7 +72,6 @@ export class ContaminationSpell extends Spell {
   }
 
   private createProjectiles() {
-    this.projectiles = [];
     const usedIndices: number[] = [];
     for (let i = 0; i < this.projectileCount; i++) {
       let rndInd = pickRnd(0, this.board.jewels.length - 1);
@@ -84,6 +84,7 @@ export class ContaminationSpell extends Spell {
         position: { ...this.position },
         targetInd: jewel.index,
       });
+      projectile.sprite?.play();
       projectile.moveTo(jewel.getIndexPos());
       this.projectiles.push(projectile);
     }
@@ -91,8 +92,7 @@ export class ContaminationSpell extends Spell {
 
   protected stopCasting() {
     super.stopCasting();
-    if (!this.board.opponentBoard) return;
-    this.board.opponentBoard.applyDamage(5);
+    this.board.removeOrMergeMatches();
   }
 
   private updateProjectiles(t: number, dt: number) {
@@ -112,6 +112,8 @@ export class ContaminationSpell extends Spell {
           jewel.jewelParentType !== 5
         ) {
           jewel.convertTo(5);
+          jewel.stopConverting();
+
           const convertAnim = createAnimationWithSprite(
             jewel.position,
             "jewelConvert",

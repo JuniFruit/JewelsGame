@@ -40,7 +40,9 @@ export class Board extends BaseEntity {
   jewels: Jewel[] = [];
   t = 0;
   jewelSize: Size;
+  totalHealth: number = 0;
   health: number = 0;
+  healthPer: number = 0;
   player: "p1" | "p2" = "p1";
   opponentBoard: Board | undefined;
   effects: Record<string, Effect> = {};
@@ -68,15 +70,21 @@ export class Board extends BaseEntity {
     this.cols = cols;
     this.rows = rows;
     this.health = health;
+    this.totalHealth = health;
     this.player = player;
     this.jewelSize = {
       width: this.size.width / this.cols,
       height: this.size.height / this.rows,
     };
+    this.recalculateHealthPercent();
   }
 
   setOpponentBoard(board: Board) {
     this.opponentBoard = board;
+  }
+
+  private recalculateHealthPercent() {
+    this.healthPer = (this.health / this.totalHealth) * 100;
   }
 
   applyDamage(val: number) {
@@ -91,6 +99,7 @@ export class Board extends BaseEntity {
     if (this.health <= 0) {
       this.health = 0;
     }
+    this.recalculateHealthPercent();
     this.UI?.healthBar?.applyDamage(val);
   }
 
@@ -101,9 +110,10 @@ export class Board extends BaseEntity {
     }
 
     this.health += heal;
-    if (this.health >= 100) {
-      this.health = 100;
+    if (this.health >= this.totalHealth) {
+      this.health = this.totalHealth;
     }
+    this.recalculateHealthPercent();
     this.UI?.healthBar?.applyHeal(val);
   }
 
@@ -153,7 +163,7 @@ export class Board extends BaseEntity {
         effect =
           this.effects.fatigue ||
           new FatigueEffect({
-            activeTime: 5,
+            activeTime: 10,
             effectType: "fatigue",
             board: this,
             animKey: "poisonEffect",
@@ -176,7 +186,7 @@ export class Board extends BaseEntity {
         effect =
           this.effects.liturgy ||
           new LiturgyEffect({
-            activeTime: 5,
+            activeTime: 10,
             effectType: "liturgy",
             board: this,
             animKey: "liturgyEffect",
@@ -351,7 +361,7 @@ export class Board extends BaseEntity {
 
   private castProjectile(jewelType: number, originPos: Coords) {
     const ent = new AttackProjectile({
-      damageOnHit: 0.5,
+      damageOnHit: 10,
       board: this,
       jewelType: jewelType,
       position: originPos,
@@ -393,7 +403,8 @@ export class Board extends BaseEntity {
   }
 
   reset() {
-    this.health = 100;
+    this.health = this.totalHealth;
+    this.recalculateHealthPercent();
     this.spellsToCast = [];
     this.jewels = [];
     this.isFalling = false;
@@ -508,7 +519,11 @@ export class Board extends BaseEntity {
 
   private findConversion(type: number, matches: number) {
     const found = Object.keys(JEWEL_SPELL_CONVERSION)
-      .reverse()
+      .sort(
+        (a, b) =>
+          JEWEL_SPELL_CONVERSION[b].matchesToGet -
+          JEWEL_SPELL_CONVERSION[a].matchesToGet,
+      )
       .find((key) => {
         const item = JEWEL_SPELL_CONVERSION[key];
         return item.parentType === type && item.matchesToGet <= matches;
@@ -521,7 +536,7 @@ export class Board extends BaseEntity {
     indices.sort((a, b) => a - b);
     const mergeInd =
       mergeIndex > -1 ? mergeIndex : Math.floor(indices.length >> 1) - 1;
-    const type = this.jewels[indices[mergeInd]].jewelType;
+    const type = this.jewels[indices[mergeInd]].jewelParentType;
     const matches = indices.length;
 
     const mergeTo = this.findConversion(type, matches);

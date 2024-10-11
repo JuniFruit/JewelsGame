@@ -216,7 +216,7 @@ export class BoardUI extends InteractableEntity {
       const effectKey = this.board.effectKeys[i];
       const effect = this.board.effects[effectKey];
       if (effect.isActive) {
-        const y = i * 20 + 100;
+        const y = i * 50 + 100;
         const x =
           this.board.player === "p1"
             ? this.board.position.x + this.board.size.width + 20

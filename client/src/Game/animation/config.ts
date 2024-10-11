@@ -270,7 +270,8 @@ export const imageConfigs: Record<string, ImageConfig> = {
     scale: 2.5,
   },
   stunEffect: {
-    imageName: "fireLoop",
+    framesPerSec: 15,
+    imageName: "fire_effect_loop",
     scale: 2.5,
   },
   jewelConvert: {
@@ -290,7 +291,7 @@ export const imageConfigs: Record<string, ImageConfig> = {
   },
   critStrikeEffect: {
     imageName: "lightning",
-    scale: 2.5,
+    scale: 3.5,
   },
   liturgyEffect: {
     framesPerSec: 15,

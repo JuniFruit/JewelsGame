@@ -1,6 +1,7 @@
 import { Animation } from "../animation";
-import { Board, Jewel } from "../board";
 import { MOUSE_SIZE } from "../config";
+import { Board } from "../game/board";
+import { Jewel } from "../game/jewel";
 import {
   BaseEntityProps,
   Coords,

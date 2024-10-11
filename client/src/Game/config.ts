@@ -1,4 +1,4 @@
-import { BoardProps } from "./board";
+import { BoardProps } from "./game/board";
 import { Size } from "./sharedEntities";
 import { ButtonProps } from "./UI/button";
 

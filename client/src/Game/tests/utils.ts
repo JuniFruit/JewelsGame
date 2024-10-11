@@ -1,4 +1,4 @@
-import type { Board } from "../board";
+import { Board } from "../game/board";
 
 export function advanceStateBy(secs: number, board: Board) {
   const frameTime = 0.016;

@@ -1,6 +1,5 @@
 import { type ImageKey, images } from "../assets/imageAssets/imageAssets";
 import { JEWEL_SPELL_TYPE, JEWEL_TYPE } from "../config";
-import { LiturgyEffect } from "../effects";
 import type { Size } from "../sharedEntities";
 
 export type ImageConfig = {

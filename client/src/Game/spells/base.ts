@@ -1,5 +1,5 @@
 import { Animation } from "../animation";
-import { Board } from "../board";
+import { Board } from "../game/board";
 import { BaseEntity, BaseEntityProps, Coords } from "../sharedEntities";
 import { getMovingProps, Vector } from "../utils";
 

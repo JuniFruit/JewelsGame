@@ -1,6 +1,6 @@
 import { UI } from "..";
 import { DEFAULT_BUTTON_THEME } from "../../config";
-import { Game } from "../../Game";
+import { Game } from "../../game";
 import { Debug } from "../../utils";
 import { Button } from "../button";
 import { InGameUI } from "../inGameUI";

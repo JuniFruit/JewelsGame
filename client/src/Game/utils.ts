@@ -3,7 +3,7 @@
  */
 
 import { BOARD_COLS, BOARD_ROWS, JEWEL_TYPE } from "./config";
-import { Game } from "./Game";
+import { Game } from "./game";
 import { Coords, Size } from "./sharedEntities";
 
 export function convertTo2dInd(ind: number, rows: number, cols: number) {

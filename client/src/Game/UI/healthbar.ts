@@ -1,4 +1,4 @@
-import { Board } from "../board";
+import { Board } from "../game/board";
 import { BaseEntityProps, Coords, InteractableEntity } from "../sharedEntities";
 
 export type HealthBarProps = Omit<BaseEntityProps, "type"> & {

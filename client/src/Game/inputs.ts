@@ -1,4 +1,4 @@
-import { Game } from "./Game";
+import { Game } from "./game";
 import { Coords } from "./sharedEntities";
 import { UI } from "./UI";
 import { Debug } from "./utils";

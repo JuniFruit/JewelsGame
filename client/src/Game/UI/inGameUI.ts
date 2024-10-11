@@ -1,5 +1,5 @@
 import { UI } from ".";
-import { Game } from "../Game";
+import { Game } from "../game";
 import { BaseEntityProps, Coords, InteractableEntity } from "../sharedEntities";
 import { BoardUI } from "./boardUI";
 import { Button } from "./button";

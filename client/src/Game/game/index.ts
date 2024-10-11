@@ -1,8 +1,8 @@
-import { JEWEL_TYPE, P1_BOARD, P2_BOARD } from "./config";
+import { AI } from "../AI";
+import { JEWEL_TYPE, P1_BOARD, P2_BOARD } from "../config";
+import { Timer } from "../sharedEntities";
+import { convertTo2dInd } from "../utils";
 import { Board } from "./board";
-import { convertTo2dInd } from "./utils";
-import { Timer } from "./sharedEntities";
-import { AI } from "./AI";
 
 export type GameProps = {
   mode?: "multiplayer" | "singleplayer";

@@ -1,5 +1,5 @@
-import { Board } from "./board";
 import { Game } from "./Game";
+import { Board } from "./game/board";
 import { Timer } from "./sharedEntities";
 
 export type AIProps = {

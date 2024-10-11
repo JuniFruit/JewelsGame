@@ -1,5 +1,5 @@
 import { UI } from "..";
-import { Game } from "../../Game";
+import { Game } from "../../game";
 import { InteractableEntity } from "../../sharedEntities";
 import { Debug } from "../../utils";
 import { debugButtons, inSoloGameButtons } from "./game";

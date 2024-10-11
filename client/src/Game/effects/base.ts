@@ -1,5 +1,5 @@
 import { createSprite, Sprite } from "../animation";
-import { Board } from "../board";
+import { Board } from "../game/board";
 import { Coords, Size, Timer } from "../sharedEntities";
 
 export type EffectProps = {

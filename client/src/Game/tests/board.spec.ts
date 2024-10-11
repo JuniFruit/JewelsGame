@@ -1,6 +1,6 @@
 import { JEWEL_SPELL_CONVERSION, P1_BOARD } from "../config";
-import { Board } from "../board";
 import { test, expect, describe, beforeEach } from "vitest";
+import { Board } from "../game/board";
 
 /**
  *

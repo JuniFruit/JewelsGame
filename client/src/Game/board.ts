@@ -707,7 +707,6 @@ export class Board extends BaseEntity {
     }
     if (!effect.isActive) {
       effect.activate();
-      console.log(effect.timer.timeLeft, effect.effectType, effect.isActive);
     }
 
     if (effect.isActive && anim) {
@@ -1004,10 +1003,12 @@ export class Board extends BaseEntity {
   }
 
   private findConversion(type: number, matches: number) {
-    const found = Object.keys(JEWEL_SPELL_CONVERSION).find((key) => {
-      const item = JEWEL_SPELL_CONVERSION[key];
-      return item.parentType === type && item.matchesToGet <= matches;
-    });
+    const found = Object.keys(JEWEL_SPELL_CONVERSION)
+      .reverse()
+      .find((key) => {
+        const item = JEWEL_SPELL_CONVERSION[key];
+        return item.parentType === type && item.matchesToGet <= matches;
+      });
 
     return found ? +found : 0;
   }

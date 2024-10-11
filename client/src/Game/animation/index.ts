@@ -191,13 +191,6 @@ export class Sprite extends BaseEntity {
       this.size.width,
       this.size.height,
     );
-    ctx.strokeStyle = "red";
-    ctx.strokeRect(
-      this.position.x - this.adjustmentVec.x,
-      this.position.y - this.adjustmentVec.y,
-      this.size.width,
-      this.size.height,
-    );
     ctx.setTransform(prevMatrix);
   }
 }

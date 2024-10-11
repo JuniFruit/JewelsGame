@@ -103,13 +103,6 @@ export class BashStrikeSpell extends Spell {
     if (this.currTarget === "jewel") {
       ctx.strokeRect(this.targetPosition.x, this.targetPosition.y, 10, 10);
     }
-    ctx.strokeStyle = "red";
-    ctx.strokeRect(
-      this.position.x,
-      this.position.y,
-      this.size.width,
-      this.size.height,
-    );
 
     this.animation.draw(ctx);
   }

@@ -11,7 +11,7 @@ export class UI {
   currentElements: ScreenLayout["elements"] = [];
   fontSize = DEFAULT_FONT_SIZE;
   fontFamily = "Arial";
-  fontWeight = "light";
+  fontWeight = "bold";
   currentFont = `${this.fontWeight} ${this.fontSize} ${this.fontFamily}`;
   currentHoveredElement: InteractableEntity | undefined;
 

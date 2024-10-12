@@ -18,7 +18,6 @@ export function mainMenuButtons(
       ...DEFAULT_BUTTON_THEME,
       text: "Solo game",
       padding: 10,
-      fontSize: "20px",
       onClick: () => {
         ui.setCurrentScreen("solo_game");
         game.setGameMode("singleplayer");
@@ -33,7 +32,6 @@ export function mainMenuButtons(
       ...DEFAULT_BUTTON_THEME,
       text: "Settings",
       padding: 10,
-      fontSize: "10px",
     }),
   ];
 }

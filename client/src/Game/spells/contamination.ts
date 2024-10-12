@@ -1,6 +1,6 @@
 import { createAnimationWithSprite, createSprite, Sprite } from "../animation";
 import { BaseEntity, BaseEntityProps, Coords } from "../sharedEntities";
-import { detectCollision, getMovingProps, pickRnd, Vector } from "../utils";
+import { getMovingProps, pickRnd, Vector } from "../utils";
 import { Spell, SpellProps } from "./base";
 
 type ProjectileProps = Omit<BaseEntityProps, "type" | "size"> & {
@@ -32,18 +32,19 @@ class Projectile extends BaseEntity {
     this.movingVec.setAngle(angle);
     this.sprite?.setAngle(angle);
   }
+  private isReachedTarget(vel: number) {
+    const dx = Math.abs(this.position.x - this.targetPosition.x);
+    const dy = Math.abs(this.position.y - this.targetPosition.y);
+    const speed = Math.abs(vel);
+    return dx <= speed && dy <= speed;
+  }
 
   update(_t: number, dt: number): void {
     if (this.isHit) return;
     this.position.x += this.movingVec.x * dt;
     this.position.y += this.movingVec.y * dt;
     this.sprite?.update(_t, dt);
-    if (
-      detectCollision(this.position, this.size, this.targetPosition, {
-        width: 50,
-        height: 50,
-      })
-    ) {
+    if (this.isReachedTarget(this.movingVec.getLength() * dt)) {
       this.isHit = true;
     }
   }

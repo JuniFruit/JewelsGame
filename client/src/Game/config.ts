@@ -3,7 +3,7 @@ import { Size } from "./sharedEntities";
 import { ButtonProps } from "./UI/button";
 
 // set debug mode, additional info and buttons will be rendered
-export const DEBUG = false;
+export const DEBUG = true;
 // cursor size bounds to check for collisions (used to check buttons collision for example)
 export const MOUSE_SIZE: Size = {
   height: 10,
@@ -110,15 +110,16 @@ export const JEWEL_TYPE_TO_COLOR: Record<number, string> = {
   12: "brown",
 };
 
-export const DEFAULT_FONT_SIZE = "20px";
+export const DEFAULT_FONT_SIZE = "30px";
 
 // UI button color themes
 
 export const DEFAULT_BUTTON_THEME: Pick<
   ButtonProps,
-  "bgColor" | "padding" | "bgHoverColor" | "icon" | "fontColor"
+  "bgColor" | "padding" | "bgHoverColor" | "icon" | "fontColor" | "fontSize"
 > = {
   bgColor: "#8a2be2",
+  fontSize: "30px",
   padding: 5,
   fontColor: "#ffffff",
 };

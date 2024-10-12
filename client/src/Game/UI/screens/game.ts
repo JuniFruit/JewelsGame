@@ -23,7 +23,6 @@ export function inSoloGameButtons(
       text: "Start game",
       padding: 10,
       disabled: game.isStarted,
-      fontSize: "10px",
       onClick: (btn) => {
         game.startGame();
         btn.disable();
@@ -39,7 +38,6 @@ export function inSoloGameButtons(
       text: game.isPaused ? "Unpause" : "Pause",
       padding: 10,
       disabled: game.isPaused,
-      fontSize: "10px",
       onClick: (btn) => {
         game.setPause(!game.isPaused);
         btn.setText(game.isPaused ? "Unpause" : "Pause");
@@ -54,7 +52,6 @@ export function inSoloGameButtons(
       ...DEFAULT_BUTTON_THEME,
       text: "Quit",
       padding: 10,
-      fontSize: "10px",
       onClick: () => {
         ui.setCurrentScreen("main_menu");
         game.reset();

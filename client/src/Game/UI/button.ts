@@ -173,6 +173,7 @@ export class Button extends InteractableEntity {
   }
 
   draw(_ctx: CanvasRenderingContext2D) {
+    const prevFont = this.ctx.font;
     this.ctx.font = this.currentFont;
     if (this.isHovered) {
       this.ctx.fillStyle = this.bgHoverColor;
@@ -190,5 +191,6 @@ export class Button extends InteractableEntity {
     );
     this.ctx.fillStyle = this.fontColor;
     this.ctx.fillText(this.text, this.textPos.x, this.textPos.y);
+    this.ctx.font = prevFont;
   }
 }

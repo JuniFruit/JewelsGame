@@ -1,4 +1,5 @@
 import { UI } from "..";
+import { ImageKey } from "../../assets/imageAssets/imageAssets";
 import { Game } from "../../game";
 import { InteractableEntity } from "../../sharedEntities";
 import { Debug } from "../../utils";
@@ -7,7 +8,7 @@ import { mainMenuButtons } from "./mainMenu";
 
 export type ScreenLayout = {
   screenName: string;
-  background: string;
+  background: ImageKey | "";
   elements: InteractableEntity[];
 };
 
@@ -20,7 +21,7 @@ export function initGameScreens(
   const screens: ScreenLayout[] = [
     {
       screenName: "solo_game",
-      background: "",
+      background: "main_bg",
       elements: [
         ...(debugInstance ? debugButtons(ctx, debugInstance!) : []),
         ...inSoloGameButtons(ctx, ui, game),
@@ -28,7 +29,7 @@ export function initGameScreens(
     },
     {
       screenName: "main_menu",
-      background: "",
+      background: "main_bg",
       elements: [...mainMenuButtons(ctx, ui, game)],
     },
   ];

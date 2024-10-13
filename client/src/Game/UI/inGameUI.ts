@@ -88,18 +88,25 @@ export class InGameUI extends InteractableEntity {
       !this.game.isOver &&
       this.game.countDownTimer.isGoing
     ) {
+      const text =
+        "Game starts in: " + Math.trunc(this.game.countDownTimer.timeLeft + 1);
+      const tSise = ctx.measureText(text);
+
       ctx.fillText(
         "Game starts in: " + Math.trunc(this.game.countDownTimer.timeLeft + 1),
-        ctx.canvas.getBoundingClientRect().width / 2,
-        270,
+        ctx.canvas.getBoundingClientRect().width * 0.5 - tSise.width * 0.5,
+        170,
       );
     }
 
     if (this.game.isOver && this.game.winner) {
+      const text = "Winner is " + this.game.winner;
+      const tSise = ctx.measureText(text);
+
       ctx.fillText(
-        "Winner is " + this.game.winner,
-        ctx.canvas.getBoundingClientRect().width / 2,
-        270,
+        text,
+        ctx.canvas.getBoundingClientRect().width * 0.5 - tSise.width * 0.5,
+        170,
       );
     }
   }

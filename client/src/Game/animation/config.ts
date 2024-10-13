@@ -53,6 +53,7 @@ const imageBaseConfigs: Record<ImageKey, ImageConfigBase> = {
     framesMaxHeight: 2,
     scale: 1,
   },
+  main_bg: {},
   assetSheet_1: {},
   plague: {
     framesMaxWidth: 8,
@@ -307,7 +308,11 @@ export function getImageAndConfig(
 ): ImageConfig & { image: HTMLImageElement } {
   const config = imageConfigs[key] || {};
   const baseConfig = imageBaseConfigs[config.imageName];
-  return { ...baseConfig, ...config, image: htmlImages[config.imageName] };
+  return { ...baseConfig, ...config, image: getImage(config.imageName) };
+}
+
+export function getImage(key: string | number) {
+  return htmlImages[key];
 }
 
 export async function initAllImages() {

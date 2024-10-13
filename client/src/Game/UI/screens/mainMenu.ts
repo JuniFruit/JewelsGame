@@ -9,7 +9,6 @@ export function mainMenuButtons(
   ui: UI,
   game: Game,
 ) {
-  console.log(ctx.canvas.getBoundingClientRect());
   return [
     new FlexContainer({
       children: [

@@ -10,21 +10,44 @@ import { initGameScreens } from "./UI/screens";
 let secondsPassed = 0;
 let oldTimeStamp = 0;
 let ctx: CanvasRenderingContext2D;
+let bgCtx: CanvasRenderingContext2D;
 let debugInstance: Debug | undefined;
 let game: Game;
 let timePassed = 0;
 let ui: UI;
 const dt_bound = 0.01;
 
-export async function init(canvas: HTMLCanvasElement) {
+export async function init() {
+  const style = {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+    top: "0",
+    left: "0",
+  };
+  const bgCanvas = document.createElement("canvas");
+  bgCanvas.setAttribute("id", "bg_canvas");
+  document.getElementById("app")?.appendChild(bgCanvas);
+
+  const canvas = document.createElement("canvas");
+  canvas.setAttribute("id", "canvas");
+  document.getElementById("app")?.appendChild(canvas);
+
+  Object.assign(bgCanvas.style, style);
+  Object.assign(canvas.style, style);
+
   const context = canvas.getContext("2d");
-  if (!context) {
+  const bgContext = bgCanvas.getContext("2d");
+  if (!context || !bgContext) {
     throw new Error("Your browser does not support this game");
   }
   ctx = context;
+  bgCtx = bgContext;
   setCanvasSize(canvas);
+  setCanvasSize(bgCanvas);
   setSmoothing(ctx);
-  ui = new UI(context);
+  setSmoothing(bgCtx);
+  ui = new UI(context, bgContext);
   await initFonts(ui);
   await initAllImages();
   game = new Game({});
@@ -83,6 +106,7 @@ function gameLoop(timeStamp: number) {
 }
 
 function draw() {
+  ui.drawBackground();
   ui.drawFont();
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   ui.draw();

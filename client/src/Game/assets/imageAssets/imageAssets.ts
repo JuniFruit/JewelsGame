@@ -38,6 +38,7 @@ import gemBlueSuperSpell from "./GEMS/BLUE_SUPERSPELL.png";
 import gemDarkBlueSuperSpell from "./GEMS/DARKBLUE_SUPERSPELL.png";
 import gemGoldSuperSpell from "./GEMS/GOLD_SUPERSPELL.png";
 import gemTurquoiseSuperSpell from "./GEMS/TURQUISE_SUPERSPELL.png";
+import main_bg from "./main_bg.jpg";
 
 export const images = {
   gemLiliacSuperSpell,
@@ -80,6 +81,7 @@ export const images = {
   purpleEffectSheet,
   redEffectSheet,
   yellowEffectSheet,
+  main_bg,
 };
 
 export type ImageKey = keyof typeof images;

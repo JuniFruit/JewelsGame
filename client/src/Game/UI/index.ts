@@ -1,3 +1,4 @@
+import { getImage, getImageAndConfig } from "../animation/config";
 import { FONT, FontWeight } from "../assets/fonts/fonts";
 import { DEFAULT_FONT_SIZE } from "../config";
 import { Coords, InteractableEntity } from "../sharedEntities";
@@ -6,20 +7,36 @@ import { ScreenLayout } from "./screens";
 export class UI {
   screens: Map<string, ScreenLayout> = new Map();
   ctx: CanvasRenderingContext2D;
+  bgCtx: CanvasRenderingContext2D;
   currentScreen = "";
+  currentBg: HTMLImageElement | undefined;
   currentElements: ScreenLayout["elements"] = [];
   fontSize = DEFAULT_FONT_SIZE;
   fontFamily = "";
   fontWeight = "";
   currentFont = `${this.fontWeight} ${this.fontSize} ${this.fontFamily}`;
   currentHoveredElement: InteractableEntity | undefined;
+  private isBgDrawn = false;
 
-  constructor(ctx: CanvasRenderingContext2D) {
+  constructor(ctx: CanvasRenderingContext2D, bgCtx: CanvasRenderingContext2D) {
     this.ctx = ctx;
+    this.bgCtx = bgCtx;
+  }
+
+  private refreshBackgroundCtx() {
+    this.bgCtx.clearRect(
+      0,
+      0,
+      this.bgCtx.canvas.width,
+      this.bgCtx.canvas.height,
+    );
+    this.isBgDrawn = false;
   }
 
   private beforeScreenChange() {
     this.currentHoveredElement = undefined;
+    this.currentBg = undefined;
+    this.refreshBackgroundCtx();
   }
 
   setCurrentScreen(key: string) {
@@ -28,7 +45,9 @@ export class UI {
       return;
     }
     const screen = this.screens.get(key);
+
     this.beforeScreenChange();
+    this.currentBg = getImage(screen?.background || "");
     this.currentScreen = screen!.screenName;
     this.currentElements = screen!.elements;
   }
@@ -105,6 +124,25 @@ export class UI {
         break;
       }
     }
+  }
+
+  drawBackground() {
+    if (this.isBgDrawn || !this.currentBg) return;
+    console.log(this.bgCtx.canvas.getBoundingClientRect());
+    const { width: canvasW, height: canvasH } =
+      this.bgCtx.canvas.getBoundingClientRect();
+    let scale = Math.min(
+      canvasW / this.currentBg.width,
+      canvasH / this.currentBg.height,
+    );
+    console.log(scale);
+    let width = this.currentBg.width * 0.5;
+    let height = this.currentBg.height * 0.5;
+    let x = canvasW / 2 - width / 2;
+    let y = canvasH / 2 - height / 2;
+
+    this.bgCtx.drawImage(this.currentBg, x, y, width, height);
+    this.isBgDrawn = true;
   }
 
   update(t: number, dt: number) {

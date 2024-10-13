@@ -1,5 +1,5 @@
 import { setCanvasSize, setSmoothing } from "./canvas";
-import { DEBUG } from "./config";
+import { DEBUG, P1_BOARD } from "./config";
 import { Game } from "./game";
 import { initAllImages } from "./animation/config";
 import { initInputs } from "./inputs";
@@ -28,6 +28,11 @@ export async function init(canvas: HTMLCanvasElement) {
   await initFonts(ui);
   await initAllImages();
   game = new Game({});
+  game.p2Board.position.x =
+    canvas.getBoundingClientRect().width -
+    10 -
+    game.p2Board.size.width -
+    P1_BOARD.position.x;
   debugInstance = DEBUG ? new Debug(game, context) : undefined;
 
   const cleanInputs = initInputs(canvas, game, ui, debugInstance);

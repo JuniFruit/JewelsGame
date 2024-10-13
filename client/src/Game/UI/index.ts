@@ -1,7 +1,6 @@
 import { FONT, FontWeight } from "../assets/fonts/fonts";
 import { DEFAULT_FONT_SIZE } from "../config";
 import { Coords, InteractableEntity } from "../sharedEntities";
-import { Button } from "./button";
 import { ScreenLayout } from "./screens";
 
 export class UI {
@@ -10,8 +9,8 @@ export class UI {
   currentScreen = "";
   currentElements: ScreenLayout["elements"] = [];
   fontSize = DEFAULT_FONT_SIZE;
-  fontFamily = "Arial";
-  fontWeight = "bold";
+  fontFamily = "";
+  fontWeight = "";
   currentFont = `${this.fontWeight} ${this.fontSize} ${this.fontFamily}`;
   currentHoveredElement: InteractableEntity | undefined;
 
@@ -61,8 +60,29 @@ export class UI {
     }
   }
 
+  private findElement(
+    accessor: string,
+    val: string,
+  ): InteractableEntity | undefined {
+    const stack = [...this.currentElements];
+    while (stack.length) {
+      const curr = stack.pop();
+      if ((curr as any)?.[accessor] === val) {
+        return curr;
+      }
+      if (curr) {
+        stack.push(...curr.children);
+      }
+    }
+    return;
+  }
+
+  getElementById(id: string) {
+    return this.findElement("id", id);
+  }
+
   getElementByText(val: string) {
-    return this.currentElements.find((item) => (item as Button).text === val);
+    return this.findElement("text", val);
   }
 
   mouseOut(mousePos: Coords) {

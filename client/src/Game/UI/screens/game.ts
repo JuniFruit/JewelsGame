@@ -3,6 +3,7 @@ import { DEFAULT_BUTTON_THEME } from "../../config";
 import { Game } from "../../game";
 import { Debug } from "../../utils";
 import { Button } from "../button";
+import { FlexContainer } from "../flexContainer";
 import { InGameUI } from "../inGameUI";
 
 export function inSoloGameButtons(
@@ -13,48 +14,64 @@ export function inSoloGameButtons(
   const gameUi = new InGameUI({ game, ui });
   return [
     gameUi,
-    new Button({
+    new FlexContainer({
+      children: [
+        new Button({
+          position: {
+            x: 0,
+            y: 0,
+          },
+          ctx,
+          ...DEFAULT_BUTTON_THEME,
+          text: "Start game",
+          padding: 10,
+          disabled: game.isStarted,
+          onClick: (btn) => {
+            game.startGame();
+            btn.disable();
+          },
+        }),
+        new Button({
+          position: {
+            x: 0,
+            y: 0,
+          },
+          ctx,
+          ...DEFAULT_BUTTON_THEME,
+          text: game.isPaused ? "Unpause" : "Pause",
+          padding: 10,
+          disabled: game.isPaused,
+          onClick: (btn) => {
+            game.setPause(!game.isPaused);
+            btn.setText(game.isPaused ? "Unpause" : "Pause");
+          },
+        }),
+        new Button({
+          position: {
+            x: 0,
+            y: 0,
+          },
+          ctx,
+          ...DEFAULT_BUTTON_THEME,
+          text: "Quit",
+          padding: 10,
+          onClick: () => {
+            (ui.getElementByText("Start game") as Button)?.activate();
+            ui.setCurrentScreen("main_menu");
+            game.reset();
+          },
+        }),
+      ],
+      direction: "column",
+      gap: 30,
+      isOriginCentered: false,
       position: {
-        x: 0 + ctx.canvas.getBoundingClientRect().width / 2,
-        y: 150,
+        x: 0,
+        y: 0,
       },
-      ctx,
-      ...DEFAULT_BUTTON_THEME,
-      text: "Start game",
-      padding: 10,
-      disabled: game.isStarted,
-      onClick: (btn) => {
-        game.startGame();
-        btn.disable();
-      },
-    }),
-    new Button({
-      position: {
-        x: 0 + ctx.canvas.getBoundingClientRect().width / 2,
-        y: 180,
-      },
-      ctx,
-      ...DEFAULT_BUTTON_THEME,
-      text: game.isPaused ? "Unpause" : "Pause",
-      padding: 10,
-      disabled: game.isPaused,
-      onClick: (btn) => {
-        game.setPause(!game.isPaused);
-        btn.setText(game.isPaused ? "Unpause" : "Pause");
-      },
-    }),
-    new Button({
-      position: {
-        x: 0 + ctx.canvas.getBoundingClientRect().width / 2,
-        y: 220,
-      },
-      ctx,
-      ...DEFAULT_BUTTON_THEME,
-      text: "Quit",
-      padding: 10,
-      onClick: () => {
-        ui.setCurrentScreen("main_menu");
-        game.reset();
+      size: {
+        width: ctx.canvas.getBoundingClientRect().width,
+        height: ctx.canvas.getBoundingClientRect().height,
       },
     }),
   ];

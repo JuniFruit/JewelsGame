@@ -122,6 +122,7 @@ export class Button extends InteractableEntity {
    * calculates size based inside element
    */
   private calculateSize() {
+    if (this.isFrozen) return;
     if (!this.textMeasure) return;
     this.isSizeRelative = true;
     this.size.width = this.textMeasure.width;
@@ -134,29 +135,50 @@ export class Button extends InteractableEntity {
     }
   }
 
-  mouseDown(mousePos: Coords): void {
-    if (this.disabled) return;
-    super.mouseDown(mousePos);
-    this.position.y += 1;
+  set posY(val: number) {
+    this._position.y = val;
     this.calculateTextPos();
+  }
+  get posY(): number {
+    return this._position.y;
+  }
+
+  set posX(val: number) {
+    this._position.x = val;
+    this.calculateTextPos();
+  }
+  get posX(): number {
+    return this._position.x;
+  }
+
+  set position(val: Coords) {
+    this._position = val;
+    this.calculateTextPos();
+  }
+  get position() {
+    return this._position;
+  }
+
+  mouseDown(mousePos: Coords): void {
+    if (this.disabled || this.hidden) return;
+    super.mouseDown(mousePos);
+    this.posY = this.posY + 1;
   }
 
   mouseUp(mousePos: Coords): void {
-    if (this.disabled) return;
+    if (this.disabled || this.hidden) return;
     super.mouseUp(mousePos);
     if (this.onClickCb) {
       this.onClickCb(this);
     } else {
       console.warn(this, "No valid click callback");
     }
-    this.position.y = this.initialPos.y;
-    this.calculateTextPos();
+    this.posY = this.posY - 1;
   }
   checkIsHovered(mousePos: Coords): boolean {
     const isHovered = super.checkIsHovered(mousePos);
     if (!isHovered && this.isClicking) {
-      this.position.y = this.initialPos.y;
-      this.calculateTextPos();
+      this.posY = this.initialPos.y;
     }
     return isHovered;
   }
@@ -165,14 +187,15 @@ export class Button extends InteractableEntity {
     if (!this.textMeasure) return;
     // centered
     this.textPos.x =
-      this.position.x + (this.size.width * 0.5 - this.textMeasure.width * 0.5);
+      this._position.x + (this.size.width * 0.5 - this.textMeasure.width * 0.5);
     this.textPos.y =
-      this.position.y +
+      this._position.y +
       this.size.height * 0.5 +
       this.textMeasure.hangingBaseline * 0.5;
   }
 
   draw(_ctx: CanvasRenderingContext2D) {
+    if (this.hidden) return;
     const prevFont = this.ctx.font;
     this.ctx.font = this.currentFont;
     if (this.isHovered) {

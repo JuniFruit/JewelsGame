@@ -1,4 +1,4 @@
-import { getImage, getImageAndConfig } from "../animation/config";
+import { getImage } from "../animation/config";
 import { FONT, FontWeight } from "../assets/fonts/fonts";
 import { DEFAULT_FONT_SIZE } from "../config";
 import { Coords, InteractableEntity } from "../sharedEntities";

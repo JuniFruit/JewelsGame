@@ -1,4 +1,4 @@
-import { Game } from "./Game";
+import { Game } from "./game";
 import { Board } from "./game/board";
 import { Timer } from "./sharedEntities";
 
@@ -11,7 +11,7 @@ export class AI {
   game: Game;
   player: "p1" | "p2";
   private myBoard: Board;
-  moveTimer = new Timer({ time: Infinity, pulseBound: 5 });
+  moveTimer = new Timer({ time: Infinity, pulseBound: 3 });
   constructor({ game, player }: AIProps) {
     this.game = game;
     this.player = player;

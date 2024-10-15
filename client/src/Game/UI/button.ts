@@ -4,11 +4,12 @@ import {
   BaseEntityProps,
   Coords,
   InteractableEntity,
+  InteractableEntityProps,
   Size,
 } from "../sharedEntities";
 import { setTransparency } from "../utils";
 
-export type ButtonProps = Omit<BaseEntityProps, "type" | "size"> & {
+export type ButtonProps = Omit<InteractableEntityProps, "type" | "size"> & {
   fontSize?: string;
   fontWeight?: FontWeight;
   disabled?: boolean;
@@ -59,8 +60,14 @@ export class Button extends InteractableEntity {
     fontColor = "",
     padding = 0,
     onClick,
+    ...rest
   }: ButtonProps) {
-    super({ size: size || { width: 0, height: 0 }, position, type: "button" });
+    super({
+      size: size || { width: 0, height: 0 },
+      position,
+      type: "button",
+      ...rest,
+    });
     this.ctx = ctx;
     this.text = text;
     this.icon = icon;

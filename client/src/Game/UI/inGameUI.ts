@@ -37,9 +37,21 @@ export class InGameUI extends InteractableEntity {
     this.game.p2Board.UI = this.p2BoardUI;
   }
 
+  onChargeUp() {
+    const blowUpBtn = this.ui.getElementByText("Blow up");
+    const healBtn = this.ui.getElementByText("Heal");
+    if (healBtn && blowUpBtn) {
+      blowUpBtn.hidden = false;
+      healBtn.hidden = false;
+    }
+  }
+
   update(t: number, dt: number) {
     this.p1BoardUI.update(t, dt);
     this.p2BoardUI.update(t, dt);
+    if (this.game.p1Board.chargeLevel === 100) {
+      this.onChargeUp();
+    }
     if (this.game.isOver) {
       this.onGameOver();
     }
@@ -50,6 +62,7 @@ export class InGameUI extends InteractableEntity {
     this.p1BoardUI.mouseMove(pos);
     return this.p1BoardUI.checkIsHovered(pos);
   }
+
   mouseUp(mousePos: Coords): void {
     if (this.game.isOver || !this.game.isStarted) return;
 

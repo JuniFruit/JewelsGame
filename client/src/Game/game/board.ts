@@ -43,6 +43,7 @@ export class Board extends BaseEntity {
   totalHealth: number = 0;
   health: number = 0;
   healthPer: number = 0;
+  chargeLevel: number = 0;
   player: "p1" | "p2" = "p1";
   opponentBoard: Board | undefined;
   effects: Record<string, Effect> = {};
@@ -101,6 +102,22 @@ export class Board extends BaseEntity {
     }
     this.recalculateHealthPercent();
     this.UI?.healthBar?.applyDamage(val);
+  }
+
+  useCharge(type: "explosion" | "heal") {
+    if (this.effects?.stun?.isActive) return;
+    switch (type) {
+      case "explosion":
+        const arr = Array(this.jewels.length)
+          .fill(null)
+          .map((_, ind) => ind);
+        this.removeLine(arr);
+        break;
+      case "heal":
+        this.applyHeal(300);
+        break;
+    }
+    this.chargeLevel = 0;
   }
 
   applyHeal(val: number) {
@@ -381,7 +398,18 @@ export class Board extends BaseEntity {
     removalAnim.play();
     this.UI?.animations?.push(removalAnim);
     if (jewel.isSpell) {
+      this.changeChargeLevel(10);
       this.createSpell(jewel);
+    }
+  }
+
+  changeChargeLevel(val: number) {
+    this.chargeLevel += val;
+    if (this.chargeLevel <= 0) {
+      this.chargeLevel = 0;
+    }
+    if (this.chargeLevel >= 100) {
+      this.chargeLevel = 100;
     }
   }
 
@@ -408,6 +436,7 @@ export class Board extends BaseEntity {
     this.spellsToCast = [];
     this.jewels = [];
     this.isFalling = false;
+    this.chargeLevel = 0;
     this.isReadyToRefill = false;
     this.UI?.reset();
     this.effects = {};
@@ -546,6 +575,7 @@ export class Board extends BaseEntity {
       if (i === mergeInd) {
         const jewel = this.jewels[currInd];
         if (jewel.isSpell) {
+          this.changeChargeLevel(10);
           this.createSpell(jewel);
         }
 
@@ -562,8 +592,10 @@ export class Board extends BaseEntity {
           this.jewels[indices[mergeInd]].getIndexPos(),
         );
         if (this.jewels[currInd].isSpell) {
+          this.changeChargeLevel(10);
           this.createSpell(this.jewels[currInd]);
         }
+        this.changeChargeLevel(1);
         this.castProjectile(this.jewels[currInd].jewelType, {
           ...this.jewels[currInd].position,
         });

@@ -24,6 +24,7 @@ export class CritStrike extends Spell {
   protected stopCasting(): void {
     super.stopCasting();
     this.board.opponentBoard?.applyDamage(100);
+    this.board.changeChargeLevel(10);
   }
 
   update(t: number, dt: number): void {

@@ -1,5 +1,5 @@
 import { UI } from "..";
-import { DEFAULT_BUTTON_THEME } from "../../config";
+import { DEFAULT_BUTTON_THEME, P1_BOARD } from "../../config";
 import { Game } from "../../game";
 import { Debug } from "../../utils";
 import { Button } from "../button";
@@ -73,6 +73,49 @@ export function inSoloGameButtons(
         width: ctx.canvas.getBoundingClientRect().width,
         height: ctx.canvas.getBoundingClientRect().height,
       },
+    }),
+    new FlexContainer({
+      children: [
+        new Button({
+          position: {
+            x: 0,
+            y: 0,
+          },
+          ctx,
+          ...DEFAULT_BUTTON_THEME,
+          text: "Heal",
+          padding: 10,
+          hidden: game.p1Board.chargeLevel < 100,
+          onClick: (btn) => {
+            game.p1Board.useCharge("heal");
+            btn.hidden = true;
+            ui.getElementByText("Blow up")!.hidden = true;
+          },
+        }),
+        new Button({
+          position: {
+            x: 0,
+            y: 0,
+          },
+          ctx,
+          ...DEFAULT_BUTTON_THEME,
+          text: "Blow up",
+          padding: 10,
+          hidden: game.p1Board.chargeLevel < 100,
+          onClick: (btn) => {
+            game.p1Board.useCharge("explosion");
+            btn.hidden = true;
+            ui.getElementByText("Heal")!.hidden = true;
+          },
+        }),
+      ],
+      gap: 20,
+      isOriginCentered: false,
+      position: {
+        x: P1_BOARD.position.x,
+        y: P1_BOARD.position.y + P1_BOARD.size.height + 150,
+      },
+      size: { width: P1_BOARD.size.width, height: 50 },
     }),
   ];
 }

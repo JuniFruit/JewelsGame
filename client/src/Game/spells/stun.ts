@@ -22,8 +22,8 @@ export class StunSpell extends Spell {
   protected stopCasting() {
     super.stopCasting();
     if (!this.board.opponentBoard) return;
-    console.log("Stunned");
     this.board.opponentBoard.applyEffect(JEWEL_SPELL_TYPE.STUN);
+    this.board.changeChargeLevel(10);
   }
 
   update(t: number, dt: number): void {

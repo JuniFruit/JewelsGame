@@ -9,6 +9,7 @@ import {
   Size,
 } from "../sharedEntities";
 import { detectCollision } from "../utils";
+import { ChargeBar } from "./chargeBar";
 import { HealthBar } from "./healthbar";
 
 export type JewelUIProps = Omit<BaseEntityProps, "type"> & {};
@@ -25,6 +26,7 @@ export type BoardUIProps = {
 
 export class BoardUI extends InteractableEntity {
   healthBar: HealthBar;
+  chargeBar: ChargeBar;
   private hoveredInd = -1;
   private selectedInd = -1;
   private currentDraggingInd = -1;
@@ -39,6 +41,7 @@ export class BoardUI extends InteractableEntity {
     });
     this.board = board;
     this.healthBar = this.initHealthBar();
+    this.chargeBar = this.initChargeBar();
   }
 
   reset() {
@@ -47,6 +50,25 @@ export class BoardUI extends InteractableEntity {
     this.resetMouseStates();
     this.resetDragging();
     this.resetSwappingIndices();
+  }
+
+  private initChargeBar() {
+    const margin = 80;
+    const height = 20;
+    const position: Coords = {
+      x: this.position.x,
+      y: this.position.y + this.size.height + margin,
+    };
+    const size: Size = {
+      width: this.size.width,
+      height,
+    };
+
+    return new ChargeBar({
+      position,
+      size,
+      board: this.board,
+    });
   }
 
   private initHealthBar() {
@@ -188,6 +210,7 @@ export class BoardUI extends InteractableEntity {
 
   update(t: number, dt: number) {
     this.healthBar.update(t, dt);
+    this.chargeBar.update(t, dt);
     if (this.animations.length) {
       this.updateAnimations(t, dt);
     }
@@ -244,6 +267,7 @@ export class BoardUI extends InteractableEntity {
       this.size.height,
     );
     this.healthBar.draw(ctx);
+    this.chargeBar.draw(ctx);
     this.drawEffectInfo(ctx);
     for (let jewelEnt of this.board.jewels) {
       if (jewelEnt.isDragging) {

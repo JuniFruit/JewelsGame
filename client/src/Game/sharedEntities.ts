@@ -89,12 +89,12 @@ export class InteractableEntity extends BaseEntity {
     position,
     size,
     id = "",
-    hidden = false,
+    hidden,
     children = [],
   }: InteractableEntityProps) {
     super({ type, position, size });
     this.children = children;
-    this.hidden = hidden;
+    this.hidden = hidden === undefined ? false : hidden;
     InteractableEntity.instances += 1;
     this.id = id || type + InteractableEntity.instances;
   }

@@ -227,12 +227,5 @@ export class FlexContainer extends InteractableEntity {
     for (let child of this.children) {
       child.draw(ctx);
     }
-    ctx.strokeStyle = "black";
-    ctx.strokeRect(
-      this.position.x,
-      this.position.y,
-      this.size.width,
-      this.size.height,
-    );
   }
 }

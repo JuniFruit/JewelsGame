@@ -1,6 +1,7 @@
 import { Game } from "./game";
 import { Board } from "./game/board";
 import { Timer } from "./sharedEntities";
+import { pickRnd } from "./utils";
 
 export type AIProps = {
   game: Game;
@@ -32,10 +33,19 @@ export class AI {
 
   // TODO: make different alg
   private makeMove() {
+    if (this.myBoard.chargeLevel === 100) {
+      const choices = ["heal", "explosion"];
+      this.myBoard.useCharge(
+        choices[pickRnd(0, choices.length - 1)] as "heal" | "explosion",
+      );
+    }
     for (let i = 0; i < this.myBoard.jewels.length; i++) {
       for (let j = 0; j < this.myBoard.jewels.length; j++) {
         const success = this.myBoard.attemptSwap(i, j);
-        if (success) return;
+        if (success) {
+          this.myBoard.changeChargeLevel(3);
+          return;
+        }
       }
     }
   }

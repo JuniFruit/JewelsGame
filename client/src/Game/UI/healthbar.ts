@@ -31,7 +31,9 @@ export class HealthBar extends InteractableEntity {
 
   private readjustBar() {
     this.size.width = this.initialSize.width * (this.board.healthPer * 0.01);
-    this.calculateTextPos(`${this.board.health} / ${this.board.totalHealth}`);
+    this.calculateTextPos(
+      `${Math.trunc(this.board.health)} / ${this.board.totalHealth}`,
+    );
   }
 
   applyHeal(val: number) {

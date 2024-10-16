@@ -43,7 +43,7 @@ export class AI {
       for (let j = 0; j < this.myBoard.jewels.length; j++) {
         const success = this.myBoard.attemptSwap(i, j);
         if (success) {
-          this.myBoard.changeChargeLevel(3);
+          this.myBoard.changeChargeLevel(1);
           return;
         }
       }

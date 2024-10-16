@@ -106,16 +106,17 @@ export class BoardUI extends InteractableEntity {
   }
 
   private resetDragging() {
-    if (this.currentDraggingInd > -1) {
-      const currentDragging = this.board.jewels[this.currentDraggingInd];
+    const currentDragging = this.board.jewels[this.currentDraggingInd];
+
+    if (currentDragging) {
       currentDragging.setDragging(false);
       if (!currentDragging.isMerging) {
         currentDragging.moveToIndPos();
       }
     }
-    if (this.selectedInd > -1) {
-      const otherJewel = this.board.jewels[this.selectedInd];
+    const otherJewel = this.board.jewels[this.selectedInd];
 
+    if (otherJewel) {
       otherJewel.moveTo(otherJewel.getIndexPos());
     }
     this.resetSwappingIndices();
@@ -133,8 +134,6 @@ export class BoardUI extends InteractableEntity {
       );
       if (isSuccess) this.selectedInd = -1;
       this.resetDragging();
-
-      return;
     }
   }
 
@@ -160,6 +159,7 @@ export class BoardUI extends InteractableEntity {
     this.hoveredInd = -1;
 
     if (!detectCollision(this.position, this.size, mousePos, MOUSE_SIZE)) {
+      this.resetDragging();
       return;
     }
     for (let i = 0; i < this.board.jewels.length; i++) {

@@ -128,16 +128,10 @@ export class UI {
 
   drawBackground() {
     if (this.isBgDrawn || !this.currentBg) return;
-    console.log(this.bgCtx.canvas.getBoundingClientRect());
     const { width: canvasW, height: canvasH } =
       this.bgCtx.canvas.getBoundingClientRect();
-    let scale = Math.min(
-      canvasW / this.currentBg.width,
-      canvasH / this.currentBg.height,
-    );
-    console.log(scale);
-    let width = this.currentBg.width * 0.5;
-    let height = this.currentBg.height * 0.5;
+    let width = this.currentBg.width * (canvasW / this.currentBg.width);
+    let height = this.currentBg.height * (canvasH / this.currentBg.height);
     let x = canvasW / 2 - width / 2;
     let y = canvasH / 2 - height / 2;
 

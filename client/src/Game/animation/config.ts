@@ -53,29 +53,29 @@ const imageBaseConfigs: Record<ImageKey, ImageConfigBase> = {
     framesMaxHeight: 2,
     scale: 1,
   },
-  // fire_projectile: {
-  //   size: { width: 50, height: 50 },
-  //   framesPerSec: 30,
-  //   scale: 3.5,
-  //   framesMaxHeight: 3,
-  //   framesMaxWidth: 3,
-  // },
-  // impact_hit_white: {
-  //   framesPerSec: 40,
-  //   framesMaxWidth: 4,
-  //   framesMaxHeight: 4,
-  // },
-  // expl_bomb: {
-  //   framesPerSec: 30,
-  //   framesMaxWidth: 8,
-  //   framesMaxHeight: 8,
-  // },
-  // fireball: {
-  //   size: { width: 50, height: 50 },
-  //   framesPerSec: 30,
-  //   framesMaxHeight: 8,
-  //   framesMaxWidth: 8,
-  // },
+  fire_projectile: {
+    size: { width: 50, height: 50 },
+    framesPerSec: 30,
+    scale: 3.5,
+    framesMaxHeight: 3,
+    framesMaxWidth: 3,
+  },
+  impact_hit_white: {
+    framesPerSec: 40,
+    framesMaxWidth: 4,
+    framesMaxHeight: 4,
+  },
+  expl_bomb: {
+    framesPerSec: 30,
+    framesMaxWidth: 8,
+    framesMaxHeight: 8,
+  },
+  fireball: {
+    size: { width: 50, height: 50 },
+    framesPerSec: 30,
+    framesMaxHeight: 8,
+    framesMaxWidth: 8,
+  },
   main_bg: {},
   assetSheet_1: {},
   plague: {
@@ -142,6 +142,11 @@ const imageBaseConfigs: Record<ImageKey, ImageConfigBase> = {
   greenEffectSheet: {
     framesMaxWidth: 20,
     framesMaxHeight: 16,
+  },
+  impactMuzzleFlash: {
+    framesPerSec: 30,
+    framesMaxHeight: 3,
+    framesMaxWidth: 3,
   },
   redEffectSheet: {
     framesMaxWidth: 20,
@@ -318,16 +323,19 @@ export const imageConfigs: Record<string, ImageConfig> = {
     scale: 3.5,
   },
   bashStrikeEffect: {
-    ...jewelAttackBaseConfig,
-    imageName: "yellowEffectSheet",
+    imageName: "fireball",
   },
   impactHitEffect: {
     isLooped: false,
-    imageName: "expl_big",
+    imageName: "impact_hit_white",
+  },
+  impactMuzzleFlash: {
+    isLooped: false,
+    imageName: "impactMuzzleFlash",
   },
   explosionEffect: {
     isLooped: false,
-    imageName: "expl_big",
+    imageName: "expl_bomb",
     scale: 1,
   },
   liturgyEffect: {

@@ -55,15 +55,15 @@ export class Game {
     }
   }
 
-  reset() {
+  reset(cleanup = false) {
     this.timeElapsed = 0;
     this.isOver = false;
     this.winner = "";
     this.isStarted = false;
     this.isPaused = false;
     this.countDownTimer.reset();
-    this.p1Board.reset();
-    this.p2Board.reset();
+    this.p1Board.reset(cleanup);
+    this.p2Board.reset(cleanup);
     this.AI?.reset();
   }
 

@@ -275,6 +275,24 @@ export class Animation {
   }
 }
 
+let animationStore: Record<string, Animation[]> = {};
+
+function getNonActiveAnimation(key: string) {
+  return animationStore[key]?.find((anim) => !anim.isAnimating);
+}
+
+function addAnimToStore(key: string, anim: Animation) {
+  if (animationStore[key]) {
+    animationStore[key].push(anim);
+  } else {
+    animationStore[key] = [anim];
+  }
+}
+
+export function cleanAnimStore() {
+  animationStore = {};
+}
+
 export function createAnimationWithSprite(
   position: Coords,
   spriteKey: string,
@@ -282,13 +300,20 @@ export function createAnimationWithSprite(
   animationTime = 0,
   originSize?: Size,
 ) {
-  const config = getImageAndConfig(spriteKey);
-  const sprite = createSprite(position, spriteKey, size, originSize);
-  const animation = new Animation({
-    animationTime: animationTime || config.animationTime,
-    sprite,
-  });
-  return animation;
+  let animation = getNonActiveAnimation(spriteKey);
+  animation?.timer?.setTime(animationTime);
+  if (!animation) {
+    const config = getImageAndConfig(spriteKey);
+    const sprite = createSprite(position, spriteKey, size, originSize);
+    animation = new Animation({
+      animationTime: animationTime || config.animationTime,
+      sprite,
+    });
+    addAnimToStore(spriteKey, animation);
+  }
+  animation.sprite!.position = position;
+
+  return animation as Animation;
 }
 
 export function createSprite(

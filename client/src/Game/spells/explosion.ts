@@ -35,7 +35,7 @@ export class ExplosionSpell extends Spell {
     if (!this.isCasting) return;
     this.animation.update(t, dt);
 
-    if (!this.animation.timer.isEnded) {
+    if (this.animation.timer.isEnded) {
       this.stopCasting();
     }
   }

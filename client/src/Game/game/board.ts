@@ -430,7 +430,7 @@ export class Board extends BaseEntity {
     return result;
   }
 
-  reset() {
+  reset(cleanup = false) {
     this.health = this.totalHealth;
     this.recalculateHealthPercent();
     this.spellsToCast = [];
@@ -442,6 +442,9 @@ export class Board extends BaseEntity {
     this.effects = {};
     this.effectKeys = [];
     this.isNewBoard = true;
+    if (cleanup) {
+      this.jewels = [];
+    }
   }
 
   createSpell(jewel: Jewel) {
@@ -753,7 +756,6 @@ export class Board extends BaseEntity {
       jewel.setJewelParentType();
       jewel.position = jewelPos;
       jewel.index = i;
-      console.warn("Reused exisiting jewel");
     } else {
       jewel = new Jewel({
         size: { ...this.jewelSize },
@@ -765,7 +767,6 @@ export class Board extends BaseEntity {
         boardRows: this.rows,
         index: i,
       });
-      console.warn("Allocated new jewel");
     }
 
     jewel.setFalling(

@@ -30,6 +30,7 @@ export class MinefieldSpell extends Spell {
     const neighbors = this.board.getNeighorIndices(this.originInd);
     for (let i = 0; i < neighbors.length; i++) {
       const currNeighbor = neighbors[i];
+
       const currNeighbors = this.board.getNeighorIndices(currNeighbor);
       const currJewel = this.board.jewels[currNeighbor];
       if (currJewel.isMatchable()) {

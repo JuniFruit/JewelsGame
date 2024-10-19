@@ -246,16 +246,16 @@ export class BoardUI extends InteractableEntity {
       animSize = { width: 120, height: 120 };
     }
 
-    // const anim = createAnimationWithSprite(
-    //   position || this.healthBar.position,
-    //   animEffect,
-    //   animSize,
-    //   0,
-    //   this.board.jewelSize,
-    // );
-    //
-    // anim.play();
-    // this.board.opponentBoard?.UI?.animations.push(anim);
+    const anim = createAnimationWithSprite(
+      position || this.healthBar.position,
+      animEffect,
+      animSize,
+      0,
+      this.board.jewelSize,
+    );
+
+    anim.play();
+    this.board.opponentBoard?.UI?.animations.push(anim);
   }
 
   private drawEffectInfo(ctx: CanvasRenderingContext2D) {

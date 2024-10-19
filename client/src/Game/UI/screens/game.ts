@@ -1,4 +1,5 @@
 import { UI } from "..";
+import { cleanAnimStore } from "../../animation";
 import { DEFAULT_BUTTON_THEME, P1_BOARD } from "../../config";
 import { Game } from "../../game";
 import { Debug } from "../../utils";
@@ -58,7 +59,8 @@ export function inSoloGameButtons(
           onClick: () => {
             (ui.getElementByText("Start game") as Button)?.activate();
             ui.setCurrentScreen("main_menu");
-            game.reset();
+            game.reset(true);
+            cleanAnimStore();
           },
         }),
       ],

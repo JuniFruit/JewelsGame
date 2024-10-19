@@ -9,7 +9,7 @@ export type AttackProjectileProps = Omit<SpellProps, "spellType" | "size"> & {
 
 export class AttackProjectile extends Spell {
   damageOnHit: number;
-  private movingFactor = 2;
+  private movingFactor = 2.5;
   constructor({ damageOnHit, jewelType, ...rest }: AttackProjectileProps) {
     super({
       size: { width: 0, height: 0 }, // we do not care about size, size for the sprite is in conf file
@@ -29,17 +29,17 @@ export class AttackProjectile extends Spell {
       console.error(`Spell: ${this.spellType} could not find opponentBoard`);
       return;
     }
-    const opponentSide =
-      this.position.x - this.board.opponentBoard.position.x < 0 ? 0 : 1;
     const target = {
       y: pickRnd(
         this.board.opponentBoard.position.y + 10,
         this.board.opponentBoard.position.y +
           this.board.opponentBoard.size.height,
       ),
-      x:
+      x: pickRnd(
+        this.board.opponentBoard.position.x,
         this.board.opponentBoard.position.x +
-        this.board.opponentBoard!.size.width * opponentSide,
+          this.board.opponentBoard!.size.width,
+      ),
     };
 
     super.moveTo(target, this.movingFactor);
@@ -56,6 +56,7 @@ export class AttackProjectile extends Spell {
     if (this.animation.timer.isEnded) {
       super.stopCasting();
       this.board.opponentBoard?.applyDamage(this.damageOnHit);
+      this.board.opponentBoard?.UI?.applyBoardHit(this.position);
     }
   }
 

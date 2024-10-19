@@ -11,9 +11,10 @@ export class MinefieldSpell extends Spell {
     super({ size: { width: 0, height: 0 }, ...rest });
     this.animation = createAnimationWithSprite(
       this.position,
-      "jewelHover",
-      { width: 50, height: 50 },
+      "explosionEffect",
+      undefined,
       1,
+      this.board.jewels[originInd].size,
     );
     this.originInd = originInd;
   }

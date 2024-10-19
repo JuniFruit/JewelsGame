@@ -53,6 +53,29 @@ const imageBaseConfigs: Record<ImageKey, ImageConfigBase> = {
     framesMaxHeight: 2,
     scale: 1,
   },
+  // fire_projectile: {
+  //   size: { width: 50, height: 50 },
+  //   framesPerSec: 30,
+  //   scale: 3.5,
+  //   framesMaxHeight: 3,
+  //   framesMaxWidth: 3,
+  // },
+  // impact_hit_white: {
+  //   framesPerSec: 40,
+  //   framesMaxWidth: 4,
+  //   framesMaxHeight: 4,
+  // },
+  // expl_bomb: {
+  //   framesPerSec: 30,
+  //   framesMaxWidth: 8,
+  //   framesMaxHeight: 8,
+  // },
+  // fireball: {
+  //   size: { width: 50, height: 50 },
+  //   framesPerSec: 30,
+  //   framesMaxHeight: 8,
+  //   framesMaxWidth: 8,
+  // },
   main_bg: {},
   assetSheet_1: {},
   plague: {
@@ -75,7 +98,7 @@ const imageBaseConfigs: Record<ImageKey, ImageConfigBase> = {
     framesMaxHeight: 2,
   },
   expl_big: {
-    framesPerSec: 10,
+    framesPerSec: 20,
     framesMaxWidth: 8,
     framesMaxHeight: 4,
   },
@@ -262,8 +285,8 @@ export const imageConfigs: Record<string, ImageConfig> = {
     imageName: "purpleEffectSheet",
   },
   [`jewelAttack_${JEWEL_TYPE.ORANGE}`]: {
-    ...jewelAttackBaseConfig,
-    imageName: "yellowEffectSheet",
+    // ...jewelAttackBaseConfig,
+    imageName: "fire_projectile",
   },
   jewelHover: {
     framesPerSec: 10,
@@ -293,6 +316,19 @@ export const imageConfigs: Record<string, ImageConfig> = {
   critStrikeEffect: {
     imageName: "lightning",
     scale: 3.5,
+  },
+  bashStrikeEffect: {
+    ...jewelAttackBaseConfig,
+    imageName: "yellowEffectSheet",
+  },
+  impactHitEffect: {
+    isLooped: false,
+    imageName: "expl_big",
+  },
+  explosionEffect: {
+    isLooped: false,
+    imageName: "expl_big",
+    scale: 1,
   },
   liturgyEffect: {
     framesPerSec: 15,

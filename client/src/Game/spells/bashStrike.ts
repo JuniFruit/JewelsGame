@@ -6,7 +6,7 @@ import { Spell, SpellProps } from "./base";
 export type BashStrikeSpellProps = Omit<SpellProps, "size"> & {};
 
 export class BashStrikeSpell extends Spell {
-  private movingFactor = 0.5;
+  private movingFactor = 1.2;
   private bashes = 3;
   private currTarget: "board" | "jewel" = "board";
   private targetInd: number = -1;
@@ -14,7 +14,9 @@ export class BashStrikeSpell extends Spell {
     super({ size: { width: 20, height: 20 }, ...rest });
     this.animation = createAnimationWithSprite(
       this.position,
-      "jewelAttack_3",
+      "bashStrikeEffect",
+      undefined,
+      0,
       this.size,
     );
     this.animation.sprite?.rescale(3.5);
@@ -65,7 +67,7 @@ export class BashStrikeSpell extends Spell {
         detectCollision(
           this.position,
           this.size,
-          this.board.opponentBoard.position,
+          this.board.opponentBoard.getBoardCenter(),
           this.board.opponentBoard.size,
         )
       ) {

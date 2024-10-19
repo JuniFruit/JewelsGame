@@ -434,7 +434,7 @@ export class Board extends BaseEntity {
     this.health = this.totalHealth;
     this.recalculateHealthPercent();
     this.spellsToCast = [];
-    this.jewels = [];
+    this.indicesToFall = [];
     this.isFalling = false;
     this.chargeLevel = 0;
     this.isReadyToRefill = false;
@@ -744,16 +744,29 @@ export class Board extends BaseEntity {
         this.jewelSize.height * (totalRows - row + 1) -
         (isPhysicalized ? Math.random() * 10 : 0),
     };
-    const jewel = new Jewel({
-      size: { ...this.jewelSize },
-      position: jewelPos,
-      jewelType: type || 0,
-      boardPos: this.position,
-      boardSize: this.size,
-      boardCols: this.cols,
-      boardRows: this.rows,
-      index: i,
-    });
+    let jewel: Jewel | undefined;
+    if (this.jewels[i] && this.jewels[i].isDisabled) {
+      jewel = this.jewels[i];
+      jewel.reset();
+      jewel.jewelType = type;
+      jewel.setJewelSprite();
+      jewel.setJewelParentType();
+      jewel.position = jewelPos;
+      jewel.index = i;
+      console.warn("Reused exisiting jewel");
+    } else {
+      jewel = new Jewel({
+        size: { ...this.jewelSize },
+        position: jewelPos,
+        jewelType: type || 0,
+        boardPos: this.position,
+        boardSize: this.size,
+        boardCols: this.cols,
+        boardRows: this.rows,
+        index: i,
+      });
+      console.warn("Allocated new jewel");
+    }
 
     jewel.setFalling(
       { x, y: this.position.y + this.jewelSize.height * row },

@@ -9,6 +9,7 @@ import { getImageAndConfig } from "./config";
 
 export type SpriteProps = Omit<BaseEntityProps, "type"> & {
   image?: HTMLImageElement;
+  originSize?: Size;
   framesMaxWidth?: number;
   framesMaxHeight?: number;
   frameStartCol?: number;
@@ -24,8 +25,15 @@ export type SpriteProps = Omit<BaseEntityProps, "type"> & {
 
 export class Sprite extends BaseEntity {
   framesPerSec: number;
+  /**
+   * actual size of the entity. Usually size of the entity is the same as the sprite size
+   * but sometimes we use different sizes for sprite and for entity (e.x. for collision detection)
+   * so when we rescale our sprite we need to do it relatively to originSize of the entity to place
+   * sprite correctly in the center
+   */
+  originSize: Size;
   prevFrame: number = 0;
-  private adjustmentVec: Coords = { x: 0, y: 0 }; // rescale adjustments
+  adjustmentVec: Coords = { x: 0, y: 0 }; // rescale adjustments
   framesMaxWidth; // total frame cols
   framesMaxHeight; // total frame rows
   framesCurrentWidth = 0; // current frame col
@@ -55,6 +63,7 @@ export class Sprite extends BaseEntity {
     frameStartCol = 1,
     frameStartRow = 1,
     framesPerSec = 60,
+    originSize,
     angle = 0,
     framesTotal,
     frameStopCol,
@@ -87,14 +96,16 @@ export class Sprite extends BaseEntity {
     this.isStatic =
       this.frameStopRow === this.frameStartRow &&
       this.frameStopCol === this.frameStartCol;
+    this.originSize = originSize || this.initialSize;
+
     this.rescaleAndAdjust();
   }
 
   private rescaleAndAdjust() {
     this.size.height = this.initialSize.height * this.scale;
     this.size.width = this.initialSize.width * this.scale;
-    const dW = this.size.width - this.initialSize.width;
-    const dH = this.size.height - this.initialSize.height;
+    const dW = this.size.width - this.originSize.width;
+    const dH = this.size.height - this.originSize.height;
     this.adjustmentVec.x = dW * 0.5;
     this.adjustmentVec.y = dH * 0.5;
   }
@@ -170,14 +181,14 @@ export class Sprite extends BaseEntity {
     if (!this.image || !this.image.complete) return;
     const prevMatrix = ctx.getTransform();
     ctx.translate(
-      this.position.x + this.initialSize.width * 0.5,
-      this.position.y + this.initialSize.height * 0.5,
+      this.position.x + this.originSize.width * 0.5,
+      this.position.y + this.originSize.height * 0.5,
     );
 
     ctx.rotate(this.angle);
     ctx.translate(
-      -this.position.x - this.initialSize.width * 0.5,
-      -this.position.y - this.initialSize.height * 0.5,
+      -this.position.x - this.originSize.width * 0.5,
+      -this.position.y - this.originSize.height * 0.5,
     );
 
     ctx.drawImage(
@@ -269,9 +280,10 @@ export function createAnimationWithSprite(
   spriteKey: string,
   size?: Size,
   animationTime = 0,
+  originSize?: Size,
 ) {
   const config = getImageAndConfig(spriteKey);
-  const sprite = createSprite(position, spriteKey, size);
+  const sprite = createSprite(position, spriteKey, size, originSize);
   const animation = new Animation({
     animationTime: animationTime || config.animationTime,
     sprite,
@@ -283,12 +295,14 @@ export function createSprite(
   position: Coords,
   key: string | number,
   size?: Size,
+  originSize?: Size,
 ) {
   const config = getImageAndConfig(key);
   const sprite = new Sprite({
     ...config,
     position,
     size: size || config.size || { width: 0, height: 0 },
+    originSize,
   });
   return sprite;
 }

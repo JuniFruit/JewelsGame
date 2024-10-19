@@ -13,11 +13,13 @@ export class HealthBar extends InteractableEntity {
   private latestDmg = 0;
   private applyingFactor = 10;
   private textPos: Coords = { x: 0, y: 0 };
+  private text: string = "";
 
   constructor({ position, size, board, player }: HealthBarProps) {
     super({ position, size, type: "healthbar" });
     this.board = board;
     this.fillColor = player === "p1" ? "blue" : "red";
+    this.text = `${Math.trunc(this.board.health)} / ${this.board.totalHealth}`;
   }
 
   applyDamage(val: number) {
@@ -31,9 +33,9 @@ export class HealthBar extends InteractableEntity {
 
   private readjustBar() {
     this.size.width = this.initialSize.width * (this.board.healthPer * 0.01);
-    this.calculateTextPos(
-      `${Math.trunc(this.board.health)} / ${this.board.totalHealth}`,
-    );
+
+    this.text = `${Math.trunc(this.board.health)} / ${this.board.totalHealth}`;
+    this.calculateTextPos(this.text);
   }
 
   applyHeal(val: number) {
@@ -83,7 +85,7 @@ export class HealthBar extends InteractableEntity {
     );
     this.ctx.fillStyle = "black";
     this.ctx.fillText(
-      `${this.board.health} / ${this.board.totalHealth}`,
+      `${Math.trunc(this.board.health)} / ${this.board.totalHealth}`,
       this.textPos.x,
       this.textPos.y,
     );

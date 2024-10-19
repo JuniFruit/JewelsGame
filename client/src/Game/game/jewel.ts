@@ -102,7 +102,7 @@ export class Jewel extends InteractableEntity {
     this.setJewelParentType();
   }
 
-  private setJewelParentType() {
+  setJewelParentType() {
     this.jewelParentType =
       JEWEL_SPELL_CONVERSION[this.jewelType]?.parentType || this.jewelType;
   }
@@ -143,6 +143,7 @@ export class Jewel extends InteractableEntity {
     this.convertTimer.reset();
     this.isMerging = false;
     this.isPhysicalized = false;
+    this.isDisabled = false;
     this.isMoving = false;
     this.isSelected = false;
     this.isFalling = false;
@@ -152,10 +153,15 @@ export class Jewel extends InteractableEntity {
     this.effect = undefined;
   }
 
-  private setJewelSprite() {
-    this.jewelSprite = createSprite(this.position, this.jewelType, {
-      ...this.size,
-    });
+  setJewelSprite() {
+    this.jewelSprite = createSprite(
+      this.position,
+      this.jewelType,
+      {
+        ...this.size,
+      },
+      this.size,
+    );
     // this.hoveredSprite = createSprite(this.position, "jewelHover", this.size);
     this.jewelSprite.play();
     // this.hoveredSprite.play();

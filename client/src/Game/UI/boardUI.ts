@@ -1,4 +1,4 @@
-import { Animation } from "../animation";
+import { Animation, createAnimationWithSprite } from "../animation";
 import { MOUSE_SIZE } from "../config";
 import { Board } from "../game/board";
 import { Jewel } from "../game/jewel";
@@ -230,6 +230,32 @@ export class BoardUI extends InteractableEntity {
     for (let effectKey of this.board.effectKeys) {
       this.board.effects[effectKey].draw(ctx);
     }
+  }
+
+  applyBoardHit(position?: Coords) {
+    let animEffect: string = "explosionEffect";
+    let animSize: Size | undefined;
+
+    const isPlayerBoard = this.board.player === "p1";
+
+    if (isPlayerBoard) {
+      animEffect = "impactHitEffect";
+      animSize = { width: 320, height: 320 };
+    }
+    if (this.board.effects?.shield?.isActive) {
+      animSize = { width: 120, height: 120 };
+    }
+
+    // const anim = createAnimationWithSprite(
+    //   position || this.healthBar.position,
+    //   animEffect,
+    //   animSize,
+    //   0,
+    //   this.board.jewelSize,
+    // );
+    //
+    // anim.play();
+    // this.board.opponentBoard?.UI?.animations.push(anim);
   }
 
   private drawEffectInfo(ctx: CanvasRenderingContext2D) {

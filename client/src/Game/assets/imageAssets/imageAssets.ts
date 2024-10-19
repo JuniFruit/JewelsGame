@@ -39,6 +39,11 @@ import gemDarkBlueSuperSpell from "./GEMS/DARKBLUE_SUPERSPELL.png";
 import gemGoldSuperSpell from "./GEMS/GOLD_SUPERSPELL.png";
 import gemTurquoiseSuperSpell from "./GEMS/TURQUISE_SUPERSPELL.png";
 import main_bg from "./main_bg.jpg";
+// import fireball from "./high_res/Fireball_v8_spritesheet.png";
+// import expl_bomb from "./high_res/Explosion_Bomb_V1_spritesheet.png";
+// import fire_projectile from "./high_res/Projectile_Bullet_spritesheet.png";
+// import impact_hit_white from "./high_res/Impact_Hit_Lv2_spritesheet.png";
+// import impactMuzzleFlash from "./high_res/Impact_Muzzle_Flash_spritesheet.png";
 
 export const images = {
   gemLiliacSuperSpell,
@@ -82,6 +87,11 @@ export const images = {
   redEffectSheet,
   yellowEffectSheet,
   main_bg,
+  // fireball,
+  // expl_bomb,
+  // fire_projectile,
+  // impact_hit_white,
+  // impactMuzzleFlash,
 };
 
 export type ImageKey = keyof typeof images;

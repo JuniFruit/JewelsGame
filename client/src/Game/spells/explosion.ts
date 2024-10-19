@@ -13,7 +13,7 @@ export class ExplosionSpell extends Spell {
     this.originInd = originInd;
     this.animation = createAnimationWithSprite(
       this.position,
-      "jewelRemove_2",
+      "explosionEffect",
       { width: 50, height: 50 },
       0.2,
     );
@@ -35,7 +35,7 @@ export class ExplosionSpell extends Spell {
     if (!this.isCasting) return;
     this.animation.update(t, dt);
 
-    if (!this.animation.isAnimating) {
+    if (!this.animation.timer.isEnded) {
       this.stopCasting();
     }
   }

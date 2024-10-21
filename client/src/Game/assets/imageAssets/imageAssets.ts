@@ -1,5 +1,4 @@
 import assetSheet_1 from "./image-full-sheet.png";
-import potionsSheet from "./potions-sheet.png";
 import fireLoop from "./fire_loop.png";
 import lightning from "./lightning.png";
 import shield from "./shield.png";
@@ -55,7 +54,6 @@ export const images = {
   gemLightGreenSuperSpell,
   gemTurquoiseSuperSpell,
   assetSheet_1,
-  potionsSheet,
   fireLoop,
   shield,
   lightning,

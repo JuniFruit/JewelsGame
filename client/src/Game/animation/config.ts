@@ -48,11 +48,6 @@ const imageBaseConfigs: Record<ImageKey, ImageConfigBase> = {
   gemBlueSuperSpell: gemSuperSpellBaseConfig,
   gemRedSuperSpell: gemSuperSpellBaseConfig,
   gemLiliacSuperSpell: gemSuperSpellBaseConfig,
-  potionsSheet: {
-    framesMaxWidth: 5,
-    framesMaxHeight: 2,
-    scale: 1,
-  },
   fire_projectile: {
     size: { width: 50, height: 50 },
     framesPerSec: 30,

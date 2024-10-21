@@ -28,7 +28,7 @@ export class ExplosionSpell extends Spell {
   protected stopCasting(): void {
     super.stopCasting();
     const indices = this.board.getNeighorIndices(this.originInd);
-    this.board.removeLine([...indices, this.originInd]);
+    this.board.removeLine([...indices]);
   }
 
   update(t: number, dt: number): void {

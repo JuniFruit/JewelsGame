@@ -1,7 +1,6 @@
 import { FONT, FontWeight } from "../assets/fonts/fonts";
 import { DEFAULT_FONT_SIZE } from "../config";
 import {
-  BaseEntityProps,
   Coords,
   InteractableEntity,
   InteractableEntityProps,
